@@ -57,7 +57,11 @@ public:
   RTPInterface(Medium* owner, Groupsock* gs);
   virtual ~RTPInterface();
 
-  Groupsock* gs() const { return fGS; }
+  Groupsock* gs() const {
+  
+    //fprintf(stderr, "       gs() -> RTPINTERFACE PORT: %hu\n", fGS->port().num());
+
+     return fGS; }
 
   void setStreamSocket(int sockNum, unsigned char streamChannelId);
   void addStreamSocket(int sockNum, unsigned char streamChannelId);

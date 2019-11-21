@@ -53,7 +53,7 @@ OutputSocket::OutputSocket(UsageEnvironment& env)
 OutputSocket::OutputSocket(UsageEnvironment& env, Port port)
   : Socket(env, port),
     fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/) {
-      fprintf(stderr, "\n made groupsock with port: %d\n", ntohs(port.num()));
+      fprintf(stderr, "\n made groupsock with port: %hu\n", port.num());
 }
 
 OutputSocket::~OutputSocket() {
@@ -486,7 +486,8 @@ int Groupsock::outputToAllMembersExcept(DirectedNetInterface* exceptInterface,
 
       if (fDests != NULL) {
 	trailer->address() = fDests->fGroupEId.groupAddress().s_addr;
-	Port destPort(ntohs(fDests->fGroupEId.portNum()));
+	//Port destPort((fDests->fGroupEId.portNum()));
+  Port destPort(ntohs(fDests->fGroupEId.portNum()));
 	trailer->port() = destPort; // structure copy
       }
       trailer->ttl() = ttlToFwd;

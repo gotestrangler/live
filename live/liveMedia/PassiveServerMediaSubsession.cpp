@@ -34,6 +34,24 @@ PassiveServerMediaSubsession
 ::PassiveServerMediaSubsession(RTPSink& rtpSink, RTCPInstance* rtcpInstance)
   : ServerMediaSubsession(rtpSink.envir()),
     fSDPLines(NULL), fRTPSink(rtpSink), fRTCPInstance(rtcpInstance) {
+
+
+           Groupsock const& gs = rtpSink.groupsockBeingUsed();
+
+          Groupsock const& control = (rtcpInstance)->groupsockBeingUsed();
+  
+
+        fprintf(stderr, "\n     making new PassiveServerMediaSubsession with RTPSINKPORT: %hu\n", (gs.port().num()));
+        fprintf(stderr, "       making new PassiveServerMediaSubsession with RTCP PORT: %hu\n", (control.port().num())); 
+
+
+          Groupsock const& fgs = fRTPSink.groupsockBeingUsed();
+
+          Groupsock const& fcontrol = (fRTCPInstance)->groupsockBeingUsed();
+
+        fprintf(stderr, "\n     MEN MEN MEN PassiveServerMediaSubsession with RTPSINKPORT: %hu\n", (fgs.port().num()));
+        fprintf(stderr, "       MEN MEN MEN PassiveServerMediaSubsession with RTCP PORT: %hu\n", (fcontrol.port().num())); 
+
   fClientRTCPSourceRecords = HashTable::create(ONE_WORD_HASH_KEYS);
 }
 
@@ -79,13 +97,11 @@ PassiveServerMediaSubsession::sdpLines() {
     // Use the components from "rtpSink":
     Groupsock const& gs = fRTPSink.groupsockBeingUsed();
 
-    Groupsock* control = fRTCPInstance->RTCPgs();
+    Groupsock const& control = (fRTCPInstance)->groupsockBeingUsed();
 
-    fprintf(stderr, "       sdpLines() -> RTSPSINK PORT: %d\n", htons(gs.port().num()));
-    fprintf(stderr, "       sdpLines() -> RTSPSINK PORT: %d\n", ntohs(gs.port().num()));
+    fprintf(stderr, "       sdpLines() -> RTSPSINK PORT: %d\n", (gs.port().num()));
 
-    fprintf(stderr, "       sdpLines() -> RTCP PORT: %d\n", htons(control->port().num()));
-    fprintf(stderr, "       sdpLines() -> RTCP PORT: %d\n", ntohs(control->port().num()));
+    fprintf(stderr, "       sdpLines() -> RTCP PORT: %d\n", (control.port().num()));
 
     AddressString groupAddressStr(gs.groupAddress());
     //fprintf(stderr, "       sdpLines() -> AddressString groupAddressStr(gs.groupAddress())\n");
@@ -155,6 +171,32 @@ PassiveServerMediaSubsession::sdpLines() {
   fprintf(stderr, "       sdpLines() -> fSDPLines != NULL -> returninng fSDPLines\n");
 
   return fSDPLines;
+}
+
+void PassiveServerMediaSubsession::getInstances(Port& serverRTPPort, Port& serverRTCPPort){
+
+  //fprintf(stderr, "       getInstances -> before groupsockBeingUsed()\n");
+
+ 
+ 
+  Groupsock & gs = fRTPSink.groupsockBeingUsed();
+
+
+  serverRTPPort = gs.port();
+
+  //fprintf(stderr, "       getInstances -> before RTCPgs()\n");
+
+
+  //Groupsock* rtcpGS = fRTCPInstance->RTCPgs();
+  Groupsock const& rtcpGS  = (fRTCPInstance)->groupsockBeingUsed();
+
+  serverRTCPPort = rtcpGS.port();
+
+  fprintf(stderr, "       getInstances -> RTSPSINK PORT: %hu\n", serverRTPPort.num());
+  fprintf(stderr, "        getInstances -> RTCP PORT: %hu\n", serverRTCPPort.num());
+
+
+
 }
 
 void PassiveServerMediaSubsession

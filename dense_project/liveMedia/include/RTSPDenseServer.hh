@@ -75,7 +75,7 @@ class RTSPDenseServer: public RTSPServer {
 
     void handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr);
 
-    char const* make(ServerMediaSession* session);
+    void make(ServerMediaSession *session);
     
     protected:
         RTSPDenseClientConnection(RTSPDenseServer& ourServer, int clientSocket, struct sockaddr_in clientAddr);

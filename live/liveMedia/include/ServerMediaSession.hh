@@ -32,6 +32,12 @@ class ServerMediaSubsession; // forward
 
 class ServerMediaSession: public Medium {
 public:
+
+  ServerMediaSubsession* fSubsessionsHead;
+  ServerMediaSubsession* fSubsessionsTail;
+
+
+  
   static ServerMediaSession* createNew(UsageEnvironment& env,
 				       char const* streamName = NULL,
 				       char const* info = NULL,
@@ -89,8 +95,7 @@ private:
 
   // Linkage fields:
   friend class ServerMediaSubsessionIterator;
-  ServerMediaSubsession* fSubsessionsHead;
-  ServerMediaSubsession* fSubsessionsTail;
+
   unsigned fSubsessionCounter;
 
   char* fStreamName;

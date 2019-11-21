@@ -599,9 +599,11 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
 
 
 
-char const * RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession* session){
+void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *session){
 
       fprintf(stderr, "/////////////// YOUR MAKE /////////////\n");
+
+      //__asm__("int $3");
   
       //ServerMediaSession* sms = fOurServer.lookupServerMediaSession(urlSuffix, false);
 
@@ -611,13 +613,15 @@ char const * RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession
         destinationAddress.s_addr = chooseRandomIPv4SSMAddress(envir());
 
         const unsigned short rtpPortNum = 18888;
+        fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
         const unsigned short rtcpPortNum = rtpPortNum+1;
+        fprintf(stderr, "rtcpPortNum: %hu\n", rtcpPortNum);
         const unsigned char ttl = 255;
 
         const Port rtpPort(rtpPortNum);
-        fprintf(stderr, "First port Nr: %d", ntohs(rtpPort.num()));
+        fprintf(stderr, "First port Nr: %hu\n", rtpPort.num());
         const Port rtcpPort(rtcpPortNum);
-        fprintf(stderr, "Secon port Nr: %d\n", ntohs(rtcpPort.num()));
+        fprintf(stderr, "Secon port Nr: %hu\n", rtcpPort.num());
 
         Groupsock rtpGroupsock(envir(), destinationAddress, rtpPort, ttl);
         rtpGroupsock.multicastSendOnly(); // we're a SSM source
@@ -653,24 +657,27 @@ char const * RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession
 
         
         PassiveServerMediaSubsession* passiveSession = PassiveServerMediaSubsession::createNew(*videoSink, rtcp);
+
+
+        Port serverRTPPort(0);
+        Port serverRTCPPort(0);
+
+
+        passiveSession->getInstances(serverRTPPort, serverRTCPPort);
+
+
+        fprintf(stderr, "       IN MAKE AGAIN -> RTSPSINK PORT: %hu\n", serverRTPPort.num());
+        fprintf(stderr, "       IN MAKE AGAIN -> RTSPSINK PORT: %hu\n", serverRTPPort.num());
+
+        fprintf(stderr, "       IN MAKE AGAIN -> RTCP PORT: %hu\n", serverRTCPPort.num());
+        fprintf(stderr, "       IN MAKE AGAIN -> RTCP PORT: %hu\n", serverRTCPPort.num());
+
+        session->addSubsession(passiveSession);
         
-        fprintf(stderr, "       removing the one there\n");
-        fOurRTSPServer.removeServerMediaSession(session);
-
-
-        char const* inputFileName = "test.264";
-
-          ServerMediaSession* sms
-          = ServerMediaSession::createNew(envir(), "teststreamyyyyyy", inputFileName,
-		      "Session streamed by \"testH264VideoStreamer\"",
-					   True /*SSM*/);
-
-        sms->addSubsession(passiveSession);
-        fOurRTSPServer.addServerMediaSession(sms);
 
         fprintf(stderr, "       finsihed addservermediaession\n");
 
-        return sms->streamName();
+        //return &passiveSession;
 
 
         //fprintf(stderr, "       Should have instertet a new subsession here: %d\n", sms->numSubsessions());
@@ -776,62 +783,61 @@ void RTSPDenseServer::RTSPDenseClientConnection
       handleCmd_notFound();
       break;
     }
-
+      
       int fNumStreamStates = session->numSubsessions();
       fprintf(stderr, "     Before make() the number of subsessions is: %d\n", fNumStreamStates);
       
-      char const * newNameSuffix;
+      //PassiveServerMediaSubsession* passiveSession;
       if(ref < 1){
 
-        newNameSuffix = make(session);
+        make(session);
       } 
 
 
-      fprintf(stderr, "\nTryin to find it again\n");
-      session = fOurServer.lookupServerMediaSession(newNameSuffix);
+      //fprintf(stderr, "\nTryin to find it again\n");
+      //session = fOurServer.lookupServerMediaSession(newNameSuffix);
       
-      
+    
     fNumStreamStates = session->numSubsessions();
 
-    fprintf(stderr, "     After make() the number of subsessions is: %d\n", fNumStreamStates);
+    //fprintf(stderr, "     After make() the number of subsessions is: %d with name: %s\n", fNumStreamStates, newNameSuffix);
 
+        Port serverRTPPort(0);
+        Port serverRTCPPort(0);
+       
+        PassiveServerMediaSubsession* ettercastRTP = (PassiveServerMediaSubsession*)session->fSubsessionsHead;
+        
+        //ettercastRTP->getInstances(serverRTPPort, serverRTCPPort);
+
+        int portnum;
+        
+        //portnum = serverRTPPort.num();
+ 
+        //fprintf(stderr, "        IN YOUR DESCRIBE -> RTSPSINK PORT: %hu\n", portnum );
+
+        //portnum = serverRTCPPort.num();
     
-    unsigned clientSessionId; 
-		netAddressBits clientAddress;
-    Port clientRTPPort(100);
-    Port clientRTCPPort(101);
-    Port serverRTPPort(102);
-    Port serverRTCPPort(103);
-    netAddressBits bits; 
-    u_int8_t dest = 0;
-    Boolean mul; 
-    void* tok; 
+        //fprintf(stderr, "       IN YOUR DESCRIBE -> RTCP PORT: %hu\n", portnum);
 
-      
-      ServerMediaSubsessionIterator iter(*session);
-      ServerMediaSubsession* subsession;
-      for (unsigned i = 0; i < fNumStreamStates; ++i) {
-	      subsession = iter.next();
-        subsession->sdpLines();
-            /*
-            subsession->getStreamParameters(1, fClientAddr.sin_addr.s_addr,
-				    clientRTPPort, clientRTCPPort,
-				    0, NULL, NULL,
-				    bits, dest, mul,
-				    serverRTPPort, serverRTCPPort,
-				    tok); */
-
-        fprintf(stderr, "       back from getting stream paramters -> HAVE LOOKED UP PORT: %d\n", htons(serverRTPPort.num()));
-        fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP PORT: %d\n", ntohs(serverRTPPort.num())); 
-      }
-
-      
 
     //fprintf(stderr, "This is describe -> the lookupservermediasession != NULL moving on\n");
     
     // Increment the "ServerMediaSession" object's reference count, in case someone removes it
     // while we're using it:
     session->incrementReferenceCount();
+
+
+        //ettercastRTP = (PassiveServerMediaSubsession*)session->fSubsessionsHead;
+        
+        //ettercastRTP->getInstances(serverRTPPort, serverRTCPPort);
+
+        //portnum = serverRTPPort.num();
+ 
+        //fprintf(stderr, "        IN YOUR DESCRIBe AFTER INCREMENT -> RTSPSINK PORT: %hu\n", portnum );
+
+        //portnum = serverRTCPPort.num();
+    
+        //fprintf(stderr, "       IN YOUR DESCRIBE AFTER INCREMENT -> RTCP PORT: %hu\n", portnum);
 
     // Then, assemble a SDP description for this session:
     sdpDescription = session->generateSDPDescription();

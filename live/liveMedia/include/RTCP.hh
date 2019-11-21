@@ -105,6 +105,9 @@ public:
       // then the remaining bytes are '\0'.)
 
   Groupsock* RTCPgs() const { return fRTCPInterface.gs(); }
+  Groupsock& groupsockBeingUsed() {
+     return *(fRTCPInterface.gs()); 
+  }
 
   void setStreamSocket(int sockNum, unsigned char streamChannelId);
   void addStreamSocket(int sockNum, unsigned char streamChannelId);

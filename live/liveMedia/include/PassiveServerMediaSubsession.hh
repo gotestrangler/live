@@ -38,6 +38,8 @@ public:
   static PassiveServerMediaSubsession* createNew(RTPSink& rtpSink,
 						 RTCPInstance* rtcpInstance = NULL);
 
+  void getInstances(Port& serverRTPPort, Port& serverRTCPPort);
+
 protected:
   PassiveServerMediaSubsession(RTPSink& rtpSink, RTCPInstance* rtcpInstance);
       // called only by createNew();

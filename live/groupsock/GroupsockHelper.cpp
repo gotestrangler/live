@@ -104,8 +104,8 @@ static int createSocket(int type) {
 
 int setupDatagramSocket(UsageEnvironment& env, Port port) {
 
-  fprintf(stderr, "       setupDatagramSocket-> PORT: %d\n", htons(port.num()));
-  fprintf(stderr, "       setupDatagramSocket-> PORT: %d\n", ntohs(port.num()));
+  //fprintf(stderr, "       setupDatagramSocket-> PORT: %d\n", htons(port.num()));
+  //fprintf(stderr, "       setupDatagramSocket-> PORT: %d\n", ntohs(port.num()));
 
   if (!initializeWinsockIfNecessary()) {
     socketErr(env, "Failed to initialize 'winsock': ");
@@ -380,8 +380,8 @@ int readSocket(UsageEnvironment& env,
     return -1;
   }
 
-    fprintf(stderr, "       readsocket -> PORT: %d\n", htons(fromAddress.sin_port));
-    fprintf(stderr, "       readsocket -> PORT: %d\n", ntohs(fromAddress.sin_port));
+    fprintf(stderr, "       readsocket -> PORT: %hu\n", htons(fromAddress.sin_port));
+    fprintf(stderr, "       readsocket -> PORT: %hu\n", ntohs(fromAddress.sin_port));
 
   return bytesRead;
 }
@@ -391,8 +391,8 @@ Boolean writeSocket(UsageEnvironment& env,
 		    u_int8_t ttlArg,
 		    unsigned char* buffer, unsigned bufferSize) {
 
-  fprintf(stderr, "       writesocket -> PORT: %d\n", htons(portNum));
-  fprintf(stderr, "       writesocket -> PORT: %d\n", ntohs(portNum));
+  fprintf(stderr, "       writesocket -> PORT: %hu\n", htons(portNum));
+  fprintf(stderr, "       writesocket -> PORT: %hu\n", ntohs(portNum));
   // Before sending, set the socket's TTL:
 #if defined(__WIN32__) || defined(_WIN32)
 #define TTL_TYPE int

@@ -24,6 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "ServerMediaSession.hh"
 #include <GroupsockHelper.hh>
 #include <math.h>
+#include <PassiveServerMediaSubsession.hh>
 #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
 #define snprintf _snprintf
 #endif
@@ -93,7 +94,18 @@ ServerMediaSession::~ServerMediaSession() {
 Boolean
 ServerMediaSession::addSubsession(ServerMediaSubsession* subsession) {
 
+        Port serverRTPPort(0);
+        Port serverRTCPPort(0);
+
+
+        PassiveServerMediaSubsession* ettercast = (PassiveServerMediaSubsession*)subsession;
+        
+        ettercast->getInstances(serverRTPPort, serverRTCPPort);
+
+
+        fprintf(stderr, "       addSubsession -> RTSPSINK PORT: %hu\n", (serverRTPPort.num()));
   
+        fprintf(stderr, "       addSubsession -> RTCP PORT: %hu\n", (serverRTCPPort.num()));
 
   
 
@@ -224,7 +236,28 @@ Boolean ServerMediaSession::isServerMediaSession() const {
 
 char* ServerMediaSession::generateSDPDescription() {
 
-  //fprintf(stderr, "       generateSDPDescription()\n");
+
+        Port serverRTPPort(0);
+        Port serverRTCPPort(0);
+       
+        PassiveServerMediaSubsession* ettercastRTP = (PassiveServerMediaSubsession*)fSubsessionsHead;
+        
+        ettercastRTP->getInstances(serverRTPPort, serverRTCPPort);
+
+        int portnum = serverRTPPort.num();
+ 
+        fprintf(stderr, "        IN YOUR generateSDPDescription() -> RTSPSINK PORT: %hu\n", portnum );
+
+        portnum = serverRTCPPort.num();
+    
+        fprintf(stderr, "       IN YOUR generateSDPDescription() -> RTCP PORT: %hu\n", portnum);
+
+
+
+
+
+
+
   AddressString ipAddressStr(ourIPAddress(envir()));
   unsigned ipAddressStrSize = strlen(ipAddressStr.val());
 

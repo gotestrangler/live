@@ -121,8 +121,8 @@ RTPInterface::RTPInterface(Medium* owner, Groupsock* gs)
     fNextTCPReadStreamChannelId(0xFF), fReadHandlerProc(NULL),
     fAuxReadHandlerFunc(NULL), fAuxReadHandlerClientData(NULL) {
 
-    fprintf(stderr, "\n     Making RTPInterface with PORT: %d\n", htons(gs->port().num()));
-    fprintf(stderr, "       Making RTPInterface with PORT: %d\n", ntohs(gs->port().num()));
+    fprintf(stderr, "\n     Making RTPInterface with PORT: %hu\n", (gs->port().num()));
+
   // Make the socket non-blocking, even though it will be read from only asynchronously, when packets arrive.
   // The reason for this is that, in some OSs, reads on a blocking socket can (allegedly) sometimes block,
   // even if the socket was previously reported (e.g., by "select()") as having data available.
@@ -138,11 +138,15 @@ RTPInterface::~RTPInterface() {
 
 void RTPInterface::setStreamSocket(int sockNum,
 				   unsigned char streamChannelId) {
+
   fGS->removeAllDestinations();
   envir().taskScheduler().disableBackgroundHandling(fGS->socketNum()); // turn off any reading on our datagram socket
   fGS->reset(); // and close our datagram socket, because we won't be using it anymore
-
+  
   addStreamSocket(sockNum, streamChannelId);
+
+  fprintf(stderr, "\n     setStreamSocket with PORT: %hu\n", (fGS->port().num()));
+
 }
 
 void RTPInterface::addStreamSocket(int sockNum,
@@ -162,6 +166,9 @@ void RTPInterface::addStreamSocket(int sockNum,
   // Also, make sure this new socket is set up for receiving RTP/RTCP-over-TCP:
   SocketDescriptor* socketDescriptor = lookupSocketDescriptor(envir(), sockNum);
   socketDescriptor->registerRTPInterface(streamChannelId, this);
+
+  fprintf(stderr, "\n     addStreamSocket : %hu\n", (fGS->port().num()));
+
 }
 
 static void deregisterSocket(UsageEnvironment& env, int sockNum, unsigned char streamChannelId) {
@@ -175,6 +182,9 @@ static void deregisterSocket(UsageEnvironment& env, int sockNum, unsigned char s
 
 void RTPInterface::removeStreamSocket(int sockNum,
 				      unsigned char streamChannelId) {
+  fprintf(stderr, "\n     removeStreamSocket with PORT: %hu\n", fGS->port().num());
+
+  
   // Remove - from our list of 'TCP streams' - the record of the (sockNum,streamChannelId) pair.
   // (However "streamChannelId" == 0xFF is a special case, meaning remove all
   //  (sockNum,*) pairs.)
@@ -257,6 +267,9 @@ Boolean RTPInterface::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 				 unsigned& bytesRead, struct sockaddr_in& fromAddress,
 				 int& tcpSocketNum, unsigned char& tcpStreamChannelId,
 				 Boolean& packetReadWasIncomplete) {
+
+  fprintf(stderr, "\n     RTPInterface::handleRead with PORT: %hu\n", (fGS->port().num()));
+      
   packetReadWasIncomplete = False; // by default
   Boolean readSuccess;
   if (fNextTCPReadStreamSocketNum < 0) {
