@@ -36,6 +36,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // An "OutputSocket" is (by default) used only to send packets.
 // No packets are received on it (unless a subclass arranges this)
 
+class Groupsock; 
+
 class OutputSocket: public Socket {
 public:
   OutputSocket(UsageEnvironment& env);
@@ -89,6 +91,9 @@ public:
 	    Port port);
       // used for a 'source-specific multicast' group
   virtual ~Groupsock();
+
+  Groupsock* createNewGroupSock(UsageEnvironment& env, struct in_addr const& groupAddr,
+	    Port port, u_int8_t ttl);
 
   virtual destRecord* createNewDestRecord(struct in_addr const& addr, Port const& port, u_int8_t ttl, unsigned sessionId, destRecord* next);
       // Can be redefined by subclasses that also subclass "destRecord"
@@ -169,6 +174,9 @@ private:
   GroupEId fIncomingGroupEId;
   DirectedNetInterfaceSet fMembers;
 };
+
+
+
 
 UsageEnvironment& operator<<(UsageEnvironment& s, const Groupsock& g);
 

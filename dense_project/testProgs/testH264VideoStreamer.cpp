@@ -35,7 +35,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 UsageEnvironment* env;
 char const* inputFileName = "test.264";
 H264VideoStreamFramer* videoSource;
-RTPSink* videoSink;
+//RTPSink* videoSink;
 
 void play(); // forward
 
@@ -57,6 +57,8 @@ int main(int argc, char** argv) {
 
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
   env = BasicUsageEnvironment::createNew(*scheduler);
+
+  
 
   RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554);
   if (rtspServer == NULL) {
@@ -137,7 +139,10 @@ int main(int argc, char** argv) {
   return 0; // only to prevent compiler warning
 }
 
-void afterPlaying(void* /*clientData*/) {
+
+
+//void afterPlaying(void* /*clientData*/) {
+  /*
   videoSink->stopPlaying();
   Medium::close(videoSource);
   // Note that this also closes the input file that this source read from.
@@ -145,9 +150,9 @@ void afterPlaying(void* /*clientData*/) {
   // Start playing once again:
   play();
   //exit(1);
-}
+}*/
 
-
+/*
 
 void play() {
   // Open the input file as a 'byte-stream file source':
@@ -168,5 +173,6 @@ void play() {
   *env << "Beginning to read from file...\n";
   videoSink->startPlaying(*videoSource, afterPlaying, videoSink);
 }
+*/
 
 

@@ -5,6 +5,9 @@
 #include "DigestAuthentication.hh"
 #include "RTSPServer.hh"
 #include "Base64.hh"
+#include "PassiveServerMediaSubsession.hh"
+#include "ServerMediaSession.hh"
+#include "Groupsock.hh"
 
 
 
@@ -20,6 +23,8 @@ class RTSPDenseServer: public RTSPServer {
                             unsigned reclamationSeconds = 65,
                             Boolean streamRTPOverTCP = False);
 
+    void setRTPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl);
+    void setRTCPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl);
     
 
 
@@ -40,6 +45,28 @@ class RTSPDenseServer: public RTSPServer {
     Boolean fStreamRTPOverTCP; //Jsut so that i know where new variables should be. Remember to initialise in createNew to something
     Boolean fAllowStreamingRTPOverTCP;
     HashTable* fTCPStreamingDatabase;
+
+
+    //Til oprettelsen: 
+
+        //Sockets til RTP og RTCP 
+        Groupsock * rtpGroupsock;
+        Groupsock * rtcpGroupsock;
+
+        //RTP 
+        RTPSink* videoSink;
+
+        //RTCP
+        RTCPInstance* rtcp;
+
+        //Passive
+        PassiveServerMediaSubsession* passiveSession;
+
+        //Session
+        ServerMediaSession* denseSession; 
+
+
+
     //HashTable* fServerMediaSessions;
 
 

@@ -250,7 +250,7 @@ char* ServerMediaSession::generateSDPDescription() {
 
         portnum = serverRTCPPort.num();
     
-        fprintf(stderr, "       IN YOUR generateSDPDescription() -> RTCP PORT: %hu\n", portnum);
+        
 
 
 
@@ -260,6 +260,8 @@ char* ServerMediaSession::generateSDPDescription() {
 
   AddressString ipAddressStr(ourIPAddress(envir()));
   unsigned ipAddressStrSize = strlen(ipAddressStr.val());
+
+  fprintf(stderr, "       IN YOUR generateSDPDescription() -> RTCP PORT: %hu and IP Address: %s\n", portnum, ipAddressStr.val());
 
   // For a SSM sessions, we need a "a=source-filter: incl ..." line also:
   char* sourceFilterLine;
@@ -272,6 +274,7 @@ char* ServerMediaSession::generateSDPDescription() {
 
     sourceFilterLine = new char[sourceFilterFmtSize];
     sprintf(sourceFilterLine, sourceFilterFmt, ipAddressStr.val());
+    fprintf(stderr, "       IN YOUR generateSDPDescription() -> sourcefilterline: %s\n", sourceFilterLine);
   } else {
     //fprintf(stderr, "       generateSDPDescription() -> NOT SSM\n");
     sourceFilterLine = strDup("");

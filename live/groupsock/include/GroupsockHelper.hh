@@ -18,12 +18,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Helper routines to implement 'group sockets'
 // C++ header
 
+#include "Groupsock.hh"
+
 #ifndef _GROUPSOCK_HELPER_HH
 #define _GROUPSOCK_HELPER_HH
 
 #ifndef _NET_ADDRESS_HH
 #include "NetAddress.hh"
 #endif
+
+Groupsock* createNewGroupSock(UsageEnvironment& env, struct in_addr const& groupAddr,
+	    Port port, u_int8_t ttl); 
 
 int setupDatagramSocket(UsageEnvironment& env, Port port);
 int setupStreamSocket(UsageEnvironment& env,

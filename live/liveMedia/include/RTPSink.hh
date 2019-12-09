@@ -35,10 +35,7 @@ public:
   static Boolean lookupByName(UsageEnvironment& env, char const* sinkName,
 			      RTPSink*& resultSink);
 
-  // used by RTSP servers:
-  Groupsock const& groupsockBeingUsed() const {
-     return *(fRTPInterface.gs()); 
-  }
+
   Groupsock& groupsockBeingUsed() {
      return *(fRTPInterface.gs()); 
   }

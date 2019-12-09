@@ -19,6 +19,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Implementation
 
 #include "GroupsockHelper.hh"
+#include "Groupsock.hh"
+
 
 #if (defined(__WIN32__) || defined(_WIN32)) && !defined(__MINGW32__)
 #include <time.h>
@@ -47,6 +49,13 @@ extern "C" int initializeWinsockIfNecessary();
 // By default, use INADDR_ANY for the sending and receiving interfaces:
 netAddressBits SendingInterfaceAddr = INADDR_ANY;
 netAddressBits ReceivingInterfaceAddr = INADDR_ANY;
+
+
+Groupsock* createNewGroupSock(UsageEnvironment& env, struct in_addr const& groupAddr,
+	    Port port, u_int8_t ttl){
+        fprintf(stderr, "createNewGroupSock\n");
+        return new Groupsock(env, groupAddr, port, ttl);
+      }
 
 static void socketErr(UsageEnvironment& env, char const* errorMsg) {
   env.setResultErrMsg(errorMsg);

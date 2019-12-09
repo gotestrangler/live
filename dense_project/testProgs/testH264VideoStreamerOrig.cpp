@@ -41,14 +41,6 @@ void play(); // forward
 
 
 
-/*
-1. Environment
-2. Task Scheduler 
-3. RTSPDenseServer
-4. ServerMediaSession 
-
-*/
-
 
 
 int main(int argc, char** argv) {
@@ -136,6 +128,7 @@ int main(int argc, char** argv) {
   //env->taskScheduler().doEventLoop(); // does not return
   return 0; // only to prevent compiler warning
 }
+
 
 void afterPlaying(void* /*clientData*/) {
   videoSink->stopPlaying();

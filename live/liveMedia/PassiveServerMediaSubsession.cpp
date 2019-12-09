@@ -99,12 +99,12 @@ PassiveServerMediaSubsession::sdpLines() {
 
     Groupsock const& control = (fRTCPInstance)->groupsockBeingUsed();
 
-    fprintf(stderr, "       sdpLines() -> RTSPSINK PORT: %d\n", (gs.port().num()));
+    fprintf(stderr, "       sdpLines() -> RTSPSINK PORT: %hu\n", (gs.port().num()));
 
-    fprintf(stderr, "       sdpLines() -> RTCP PORT: %d\n", (control.port().num()));
+    fprintf(stderr, "       sdpLines() -> RTCP PORT: %hu\n", (control.port().num()));
 
     AddressString groupAddressStr(gs.groupAddress());
-    //fprintf(stderr, "       sdpLines() -> AddressString groupAddressStr(gs.groupAddress())\n");
+    fprintf(stderr, "       sdpLines() -> AddressString groupAddressStr: %s\n", groupAddressStr.val());
     unsigned short portNum = ntohs(gs.port().num());
     //fprintf(stderr, "       sdpLines() -> unsigned short portNum = ntohs(gs.port().num()): %d\n", gs.port().num());
     unsigned char ttl = gs.ttl();
@@ -194,6 +194,17 @@ void PassiveServerMediaSubsession::getInstances(Port& serverRTPPort, Port& serve
 
   fprintf(stderr, "       getInstances -> RTSPSINK PORT: %hu\n", serverRTPPort.num());
   fprintf(stderr, "        getInstances -> RTCP PORT: %hu\n", serverRTCPPort.num());
+
+  AddressString ipAddressStr(ourIPAddress(envir()));
+  unsigned ipAddressStrSize = strlen(ipAddressStr.val());      
+
+  ipAddressStrSize = ipAddressStrSize + 1;
+
+  char* adr = new char[ipAddressStrSize + 2];
+  sprintf(adr, ipAddressStr.val());
+  adr[ipAddressStrSize + 1] = '\0';
+        
+  fprintf(stderr, "        getInstances -> RTSP ADDRESS: %s\n", adr);  
 
 
 

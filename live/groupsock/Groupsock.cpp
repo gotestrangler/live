@@ -168,6 +168,7 @@ Groupsock::Groupsock(UsageEnvironment& env, struct in_addr const& groupAddr,
 }
 
 Groupsock::~Groupsock() {
+  fprintf(stderr, "     DESTRUUUUUUUUUUUCTOOOOOOOOOR\n");
   if (isSSM()) {
     if (!socketLeaveGroupSSM(env(), socketNum(), groupAddress().s_addr,
 			     sourceFilterAddress().s_addr)) {
@@ -523,6 +524,17 @@ UsageEnvironment& operator<<(UsageEnvironment& s, const Groupsock& g) {
     return s1 << (unsigned)(g.ttl()) << ")";
   }
 }
+
+
+
+
+Groupsock* Groupsock::createNewGroupSock(UsageEnvironment& env, struct in_addr const& groupAddr,
+	    Port port, u_int8_t ttl){
+        return new Groupsock(env, groupAddr, port, ttl);
+      }
+
+
+
 
 
 ////////// GroupsockLookupTable //////////
