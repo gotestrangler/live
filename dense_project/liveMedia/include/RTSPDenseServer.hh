@@ -8,6 +8,8 @@
 #include "PassiveServerMediaSubsession.hh"
 #include "ServerMediaSession.hh"
 #include "Groupsock.hh"
+#include "ByteStreamFileSource.hh"
+#include "H264VideoStreamFramer.hh"
 
 
 
@@ -64,6 +66,10 @@ class RTSPDenseServer: public RTSPServer {
 
         //Session
         ServerMediaSession* denseSession; 
+
+        //File streamer and framer
+        ByteStreamFileSource* fileSource;
+        H264VideoStreamFramer* videoSource;
 
 
 
