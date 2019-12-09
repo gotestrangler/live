@@ -115,7 +115,7 @@ ServerMediaSession::addSubsession(ServerMediaSubsession* subsession) {
     return False; // it's already used
   } 
 
-  fprintf(stderr, "       addSubsession\n");
+  fprintf(stderr, "       addSubsession 3 \n");
 
   if (fSubsessionsTail == NULL) {
     fprintf(stderr, "       addSubsession - this is now head/tail\n");

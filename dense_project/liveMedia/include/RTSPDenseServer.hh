@@ -24,9 +24,6 @@ class RTSPDenseServer: public RTSPServer {
                             UserAuthenticationDatabase* authDatabase = NULL,
                             unsigned reclamationSeconds = 65,
                             Boolean streamRTPOverTCP = False);
-
-    void setRTPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl);
-    void setRTCPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl);
     
 
 
@@ -51,6 +48,10 @@ class RTSPDenseServer: public RTSPServer {
 
     //Til oprettelsen: 
 
+    HashTable* denseTable;
+
+        //HashTable::create(ONE_WORD_HASH_KEYS)
+        /*
         //Sockets til RTP og RTCP 
         Groupsock * rtpGroupsock;
         Groupsock * rtcpGroupsock;
@@ -69,7 +70,7 @@ class RTSPDenseServer: public RTSPServer {
 
         //File streamer and framer
         ByteStreamFileSource* fileSource;
-        H264VideoStreamFramer* videoSource;
+        H264VideoStreamFramer* videoSource; */
 
 
 
@@ -94,6 +95,59 @@ class RTSPDenseServer: public RTSPServer {
     };
 
 
+
+
+    public: 
+    class DenseSession{
+        public: 
+        DenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSink* videoSink, RTCPInstance* rtcp, 
+        PassiveServerMediaSubsession* passiveSession,
+        ServerMediaSession* denseSession,
+        ByteStreamFileSource* fileSource,
+        H264VideoStreamFramer* videoSource){
+
+        }
+    
+        ~DenseSession(){
+            
+        }
+
+        void setRTPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl);
+        void setRTCPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl);
+
+        //Sockets til RTP og RTCP 
+        Groupsock * rtpGroupsock;
+        Groupsock * rtcpGroupsock;
+
+        //RTP 
+        RTPSink* videoSink;
+
+        //RTCP
+        RTCPInstance* rtcp;
+
+        //Passive
+        PassiveServerMediaSubsession* passiveSession;
+
+        //Session
+        ServerMediaSession* serversession; 
+
+        //File streamer and framer
+        ByteStreamFileSource* fileSource;
+        H264VideoStreamFramer* videoSource;
+    };
+
+    DenseSession* createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSink* videoSink, RTCPInstance* rtcp, 
+        PassiveServerMediaSubsession* passiveSession,
+        ServerMediaSession* denseSession,
+        ByteStreamFileSource* fileSource,
+        H264VideoStreamFramer* videoSource);
+
+
+
+
+
+
+    
 
 
     /////CLASS DENSE CLIENT CONNECTION

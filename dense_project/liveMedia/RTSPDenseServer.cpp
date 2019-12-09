@@ -39,7 +39,7 @@ RTSPDenseServer::RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourP
 				 Boolean streamRTPOverTCP)
   : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds),
     fStreamRTPOverTCP(streamRTPOverTCP), fAllowStreamingRTPOverTCP(True), 
-    fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)) {
+    fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)), denseTable(HashTable::create(ONE_WORD_HASH_KEYS)) {
 }
 
 RTSPDenseServer::~RTSPDenseServer() {
@@ -48,7 +48,7 @@ RTSPDenseServer::~RTSPDenseServer() {
 
 
 
-void RTSPDenseServer::setRTPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl){
+void RTSPDenseServer::DenseSession::setRTPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl){
 
   fprintf(stderr, "setRTPGSock\n");
    Groupsock* gsock = createNewGroupSock(env, destinationAddress, rtpPort, ttl);
@@ -62,7 +62,7 @@ void RTSPDenseServer::setRTPGSock(UsageEnvironment &env, in_addr destinationAddr
 
 }
 
-void RTSPDenseServer::setRTCPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl){
+void RTSPDenseServer::DenseSession::setRTCPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl){
   fprintf(stderr, "setRTPCONTROL gsock\n");
   Groupsock* gsock = createNewGroupSock(env, destinationAddress, rtpPort, ttl);
   rtcpGroupsock = gsock;
@@ -76,7 +76,20 @@ void RTSPDenseServer::setRTCPGSock(UsageEnvironment &env, in_addr destinationAdd
 
 
 
+RTSPDenseServer::DenseSession*
+RTSPDenseServer::createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSink* videoSink, RTCPInstance* rtcp, 
+        PassiveServerMediaSubsession* passiveSession,
+        ServerMediaSession* denseSession,
+        ByteStreamFileSource* fileSource,
+        H264VideoStreamFramer* videoSource) {
 
+  fprintf(stderr, "creTING NEW DENSE SESSION:\n" );
+  return new DenseSession(rtpG, rtcpG, videoSink, rtcp, 
+        passiveSession,
+        denseSession,
+        fileSource,
+        videoSource);
+}
 
 
 
@@ -621,7 +634,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
 
         UsageEnvironment& env = envir();
 
-        
+        DenseSession* firstsesh = fOurRTSPServer.createNewDenseSession(NULL, NULL, NULL, NULL, NULL, session, NULL, NULL);
 
         // Create 'groupsocks' for RTP and RTCP:
         struct in_addr destinationAddress;
@@ -639,11 +652,11 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
  
 
         //Groupsock rtpGroupsock(env, destinationAddress, rtpPort, ttl);
-        fOurRTSPServer.setRTPGSock(env, destinationAddress, rtpPort, ttl);
+        firstsesh->setRTPGSock(env, destinationAddress, rtpPort, ttl);
         //fOurRTSPServer->rtpGroupsock.multicastSendOnly(); // we're a SSM source
         //group1 = &rtpGroupsock;
         //Groupsock rtcpGroupsock(env, destinationAddress, rtcpPort, ttl);
-        fOurRTSPServer.setRTCPGSock(env, destinationAddress, rtcpPort, ttl);
+        firstsesh->setRTCPGSock(env, destinationAddress, rtcpPort, ttl);
         //fOurRTSPServer->rtcpGroupsock.multicastSendOnly(); // we're a SSM source
         //group2 = &rtpGroupsock;
 
@@ -653,7 +666,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
         OutPacketBuffer::maxSize = 100000;
         //RTPSink* videoSink;
-        fOurRTSPServer.videoSink = H264VideoRTPSink::createNew(env, fOurRTSPServer.rtpGroupsock, 96);
+        firstsesh->videoSink = H264VideoRTPSink::createNew(env, firstsesh->rtpGroupsock, 96);
 
         fprintf(stderr, "       Made Sink - CHECK INFO!! \n");
 
@@ -666,16 +679,16 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         CNAME[maxCNAMElen] = '\0'; // just in case
         // *env << "CNAME: " << CNAME  << "\n";
         fprintf(stderr, "       Making RTCP with CNAME: %s\n", CNAME);
-        RTCPInstance* rtcp;
-        rtcp = RTCPInstance::createNew(env, fOurRTSPServer.rtcpGroupsock,
+        //RTCPInstance* rtcp;
+        firstsesh->rtcp = RTCPInstance::createNew(env, firstsesh->rtcpGroupsock,
                 estimatedSessionBandwidth, CNAME,
-                fOurRTSPServer.videoSink, NULL // we're a server 
+                firstsesh->videoSink, NULL // we're a server 
                 ,True ); // we're a SSM source
         // Note: This starts RTCP running automatically
 
         fprintf(stderr, "       Made RTCP\n");
 
-        fOurRTSPServer.denseSession->addSubsession(PassiveServerMediaSubsession::createNew(*fOurRTSPServer.videoSink, rtcp));
+        session->addSubsession(PassiveServerMediaSubsession::createNew(*firstsesh->videoSink, firstsesh->rtcp));
 
         
  
@@ -692,29 +705,33 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         // Open the input file as a 'byte-stream file source':
         char const* inputFileName = "test.264";
 
-        fOurRTSPServer.fileSource = ByteStreamFileSource::createNew(envir(), inputFileName);
+        firstsesh->fileSource = ByteStreamFileSource::createNew(envir(), inputFileName);
 
         //fprintf(stderr, "       Made Made filesource\n");
-        if (fOurRTSPServer.fileSource == NULL) {
+        if (firstsesh->fileSource == NULL) {
           envir() << "Unable to open file \"" << inputFileName
               << "\" as a byte-stream file source\n";
           exit(1);
         }
 
-        FramedSource* videoES = fOurRTSPServer.fileSource;
+        FramedSource* videoES = firstsesh->fileSource;
 
         //fprintf(stderr, "       Made FramedSource\n");
 
         
 
         // Create a framer for the Video Elementary Stream:
-        fOurRTSPServer.videoSource = H264VideoStreamFramer::createNew(envir(), videoES);
+        firstsesh->videoSource = H264VideoStreamFramer::createNew(envir(), videoES);
 
         //fprintf(stderr, "       Made H264VideoStreamFramer\n");
 
-        fOurRTSPServer.videoSink->startPlaying(*fOurRTSPServer.videoSource, NULL, fOurRTSPServer.videoSink);//AFTERPLAYING!!! INSTEAD OF NULL
+        firstsesh->videoSink->startPlaying(*firstsesh->videoSource, NULL, firstsesh->videoSink);//AFTERPLAYING!!! INSTEAD OF NULL
 
-        //fprintf(stderr, "       videoSink->startPlaying\n"); 
+   
+
+        fOurRTSPServer.denseTable->Add((char const*)rtpPortNum, firstsesh);
+
+  
 
       
         //Normally, "urlPreSuffix" should be the session (stream) name, and "urlSuffix" should be the subsession (track) name.
@@ -788,7 +805,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
       handleCmd_notFound();
       break;
     }else{
-      fOurRTSPServer.denseSession = session; 
+      //fOurRTSPServer.denseTable = session; 
     }
       
       int fNumStreamStates = session->numSubsessions();
@@ -801,7 +818,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
         make(session);
       } 
 
-      session = fOurRTSPServer.denseSession;
+      //session = fOurRTSPServer.denseTable.get();
 
       //fprintf(stderr, "\nTryin to find it again\n");
       //session = fOurServer.lookupServerMediaSession(newNameSuffix);
