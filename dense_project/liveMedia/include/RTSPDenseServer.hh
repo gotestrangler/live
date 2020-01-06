@@ -25,7 +25,7 @@ class RTSPDenseServer: public RTSPServer {
                             unsigned reclamationSeconds = 65,
                             Boolean streamRTPOverTCP = False);
     
-
+    int ref;
 
     protected:
     RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourPort,
@@ -47,36 +47,9 @@ class RTSPDenseServer: public RTSPServer {
 
 
     //Til oprettelsen: 
-
     HashTable* denseTable;
 
-        //HashTable::create(ONE_WORD_HASH_KEYS)
-        /*
-        //Sockets til RTP og RTCP 
-        Groupsock * rtpGroupsock;
-        Groupsock * rtcpGroupsock;
-
-        //RTP 
-        RTPSink* videoSink;
-
-        //RTCP
-        RTCPInstance* rtcp;
-
-        //Passive
-        PassiveServerMediaSubsession* passiveSession;
-
-        //Session
-        ServerMediaSession* denseSession; 
-
-        //File streamer and framer
-        ByteStreamFileSource* fileSource;
-        H264VideoStreamFramer* videoSource; */
-
-
-
-    //HashTable* fServerMediaSessions;
-
-
+ 
     
     // A data structure that is used to implement "fTCPStreamingDatabase"
     // (and the "noteTCPStreamingOnSocket()" and "stopTCPStreamingOnSocket()" member functions):
@@ -179,7 +152,6 @@ class RTSPDenseServer: public RTSPServer {
 
     private: 
         friend class RTSPDenseClientSession;
-        int ref; 
         
 
     };

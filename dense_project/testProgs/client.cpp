@@ -482,16 +482,22 @@ DummySink* DummySink::createNew(UsageEnvironment& env, MediaSubsession& subsessi
   return new DummySink(env, subsession, streamId);
 }
 
+
+unsigned char *pH264 = NULL;
+
 DummySink::DummySink(UsageEnvironment& env, MediaSubsession& subsession, char const* streamId)
   : MediaSink(env),
     fSubsession(subsession) {
   fStreamId = strDup(streamId);
   fReceiveBuffer = new u_int8_t[DUMMY_SINK_RECEIVE_BUFFER_SIZE];
+  pH264 = (unsigned char*)malloc(256*1024);
 }
 
 DummySink::~DummySink() {
   delete[] fReceiveBuffer;
   delete[] fStreamId;
+  if(NULL != pH264)
+   free(pH264);
 }
 
 void DummySink::afterGettingFrame(void* clientData, unsigned frameSize, unsigned numTruncatedBytes,
@@ -504,7 +510,8 @@ void DummySink::afterGettingFrame(void* clientData, unsigned frameSize, unsigned
 #define DEBUG_PRINT_EACH_RECEIVED_FRAME 1
 
 void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
-				  struct timeval presentationTime, unsigned /*durationInMicroseconds*/) {
+      struct timeval presentationTime, unsigned /*durationInMicroseconds*/) {
+#if(0)
   // We've just received a frame of data.  (Optionally) print out information about it:
 #ifdef DEBUG_PRINT_EACH_RECEIVED_FRAME
   if (fStreamId != NULL) envir() << "Stream \"" << fStreamId << "\"; ";
@@ -521,7 +528,47 @@ void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes
 #endif
   envir() << "\n";
 #endif
+#else
+  printf("__FUNCTION__  = %s\n", __FUNCTION__ );
+ if(0 == strncmp(fSubsession.codecName(), "H264", 16))
+ { 
+  unsigned char nalu_header[4] = { 0, 0, 0, 1 };   
+  unsigned char extraData[256]; 
+  unsigned int num = 0;    
   
+  SPropRecord *pSPropRecord;
+  pSPropRecord = parseSPropParameterSets(fSubsession.fmtp_spropparametersets(), num);  
+  
+  unsigned int extraLen;
+  extraLen = 0;
+
+  //p_record[0] is sps 
+  //p+record[1] is pps
+  for(unsigned int i = 0; i < num; i++){ 
+   memcpy(&extraData[extraLen], &nalu_header[0], 4);
+   extraLen += 4;
+   memcpy(&extraData[extraLen], pSPropRecord[i].sPropBytes, pSPropRecord[i].sPropLength);
+   extraLen += pSPropRecord[i].sPropLength;
+  }/*for i*/
+
+  memcpy(&extraData[extraLen], &nalu_header[0], 4);
+  extraLen += 4;
+
+  delete[] pSPropRecord ;  
+
+  memcpy(pH264, &extraData[0], extraLen);
+  memcpy(pH264 + extraLen, fReceiveBuffer, frameSize); 
+  
+  int totalSize;
+  totalSize = extraLen + frameSize;
+
+  static FILE *fp = fopen("saved.h264", "wb");
+
+  fwrite(pH264, 1,  totalSize, fp);
+  fflush(fp);
+  printf("\tsaved %d bytes\n", totalSize);
+ }/*if 0 == strncmp(fSubsession.codecName(), "H264", 16)*/
+#endif  
   // Then continue, to request the next frame of data:
   continuePlaying();
 }
