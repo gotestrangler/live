@@ -23,17 +23,17 @@ RTSPDenseServer* RTSPDenseServer
 ::createNew(UsageEnvironment& env, Port ourPort,
 	    UserAuthenticationDatabase* authDatabase,
 	    unsigned reclamationSeconds,
-	    Boolean streamRTPOverTCP) {
+	    Boolean streamRTPOverTCP, int number) {
 
 
-  fprintf(stderr, "\n 2\n");
+  fprintf(stderr, "\n 2 number is: %d\n", number);
   int ourSocket = setUpOurSocket(env, ourPort);
   if (ourSocket == -1) return NULL;
 
   RTSPDenseServer * ne = new RTSPDenseServer(env, ourSocket, ourPort,
 					    authDatabase,
 					    reclamationSeconds,
-					    streamRTPOverTCP);
+					    streamRTPOverTCP, number);
 
   ne->ref = 0; 
   
@@ -43,10 +43,10 @@ RTSPDenseServer* RTSPDenseServer
 RTSPDenseServer::RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase,
 				 unsigned reclamationSeconds,
-				 Boolean streamRTPOverTCP)
+				 Boolean streamRTPOverTCP, int number)
   : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds),
     fStreamRTPOverTCP(streamRTPOverTCP), fAllowStreamingRTPOverTCP(True), 
-    fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)), denseTable(HashTable::create(ONE_WORD_HASH_KEYS)) {
+    fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)), denseTable(HashTable::create(ONE_WORD_HASH_KEYS)), filenames(HashTable::create(ONE_WORD_HASH_KEYS)), number(number) {
 }
 
 RTSPDenseServer::~RTSPDenseServer() {
@@ -642,7 +642,7 @@ void afterPlaying1(void* /*clientData*/) {
 
 
 
-void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *session){
+void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *session, int number){
 
       fprintf(stderr, "/////////////// YOUR MAKE /////////////\n");
       fprintf(stderr, "Checking input socket ID: %d\n", fClientInputSocket);
@@ -701,7 +701,8 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
 
         fprintf(stderr, "       finsihed addservermediaession\n");
 
-        char const* inputFileName = "test.264";
+        char const* inputFileName = (char const*)fOurRTSPServer.filenames->Lookup((char const*)number);
+        //char const* inputFileName2 = "output.264";
 
         firstsesh->fileSource = ByteStreamFileSource::createNew(envir(), inputFileName);
 
@@ -778,9 +779,15 @@ void RTSPDenseServer::RTSPDenseClientConnection
       
       
      
-        fprintf(stderr, "\nhuh uh uhuh uhuhuh uhuhhuhuhhhhu uuuh hu h uh uh uhu h \n");
+        fprintf(stderr, "\nNumber number number: %d \n", fOurRTSPServer.number);
+
+        int i;
+        for(i = 0; i < fOurRTSPServer.number; i++){
+          make(session, i);
+        }
+
+        
         /*
-        make(session);
 
 
       DenseSession* dsession = (DenseSession*)fOurRTSPServer.denseTable->Lookup((const char *)fClientInputSocket);
@@ -798,24 +805,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
     */
     fNumStreamStates = session->numSubsessions();
 
-    //fprintf(stderr, "     After make() the number of subsessions is: %d with name: %s\n", fNumStreamStates, newNameSuffix);
 
-        Port serverRTPPort(0);
-        Port serverRTCPPort(0);
-       
-        PassiveServerMediaSubsession* ettercastRTP = (PassiveServerMediaSubsession*)session->fSubsessionsHead;
-        
-        ettercastRTP->getInstances(serverRTPPort, serverRTCPPort);
-
-        int portnum;
-        
-        portnum = serverRTPPort.num();
- 
-        fprintf(stderr, "        IN YOUR DESCRIBE -> RTSPSINK PORT: %hu\n", portnum );
-
-        portnum = serverRTCPPort.num();
-    
-        fprintf(stderr, "       IN YOUR DESCRIBE -> RTCP PORT: %hu\n", portnum);
 
 
     //fprintf(stderr, "This is describe -> the lookupservermediasession != NULL moving on\n");
@@ -824,18 +814,6 @@ void RTSPDenseServer::RTSPDenseClientConnection
     // while we're using it:
     session->incrementReferenceCount();
 
-
-        ettercastRTP = (PassiveServerMediaSubsession*)session->fSubsessionsHead;
-        
-        ettercastRTP->getInstances(serverRTPPort, serverRTCPPort);
-
-        portnum = serverRTPPort.num();
- 
-        fprintf(stderr, "        IN YOUR DESCRIBe AFTER INCREMENT -> RTSPSINK PORT: %hu\n", portnum );
-
-        portnum = serverRTCPPort.num();
-    
-        fprintf(stderr, "       IN YOUR DESCRIBE AFTER INCREMENT -> RTCP PORT: %hu\n", portnum);
 
     // Then, assemble a SDP description for this session:
     sdpDescription = session->generateSDPDescription();

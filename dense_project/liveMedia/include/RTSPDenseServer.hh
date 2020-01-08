@@ -23,15 +23,17 @@ class RTSPDenseServer: public RTSPServer {
     static RTSPDenseServer* createNew(UsageEnvironment& env, Port ourPort = 554,
                             UserAuthenticationDatabase* authDatabase = NULL,
                             unsigned reclamationSeconds = 65,
-                            Boolean streamRTPOverTCP = False);
+                            Boolean streamRTPOverTCP = False, int number = 1);
     
     int ref;
+    int number;
+    HashTable* filenames; 
 
     protected:
     RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourPort,
                     UserAuthenticationDatabase* authDatabase,
                     unsigned reclamationSeconds,
-                    Boolean streamRTPOverTCP);
+                    Boolean streamRTPOverTCP, int number);
     // called only by createNew();
     virtual ~RTSPDenseServer ();
     
@@ -48,6 +50,7 @@ class RTSPDenseServer: public RTSPServer {
 
     //Til oprettelsen: 
     HashTable* denseTable;
+     
 
  
     
@@ -117,12 +120,6 @@ class RTSPDenseServer: public RTSPServer {
 
 
 
-
-
-
-    
-
-
     /////CLASS DENSE CLIENT CONNECTION
     public:
     // The state of a TCP connection used by a RTSP client:
@@ -135,7 +132,7 @@ class RTSPDenseServer: public RTSPServer {
 
     void handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr);
 
-    void make(ServerMediaSession *session);
+    void make(ServerMediaSession *session, int number);
     
     protected:
         RTSPDenseClientConnection(RTSPDenseServer& ourServer, int clientSocket, struct sockaddr_in clientAddr);

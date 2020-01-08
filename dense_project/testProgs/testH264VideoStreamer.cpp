@@ -55,16 +55,27 @@ int main(int argc, char** argv) {
 
   // Begin by setting up our usage environment:
 
+  
+
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
   env = BasicUsageEnvironment::createNew(*scheduler);
 
-  
+  *env << "Start trace! Nr of streams: " << argc - 1 << "\n";
 
-  RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554);
+
+  RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554, NULL, NULL, NULL, argc - 1);
   if (rtspServer == NULL) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);
   }
+
+ for(int i = 0; i < (argc - 1); i++){
+   *env << "Adding filename: " << argv[i + 1] << " to the denseServer\n";
+   rtspServer->filenames->Add((const char *)i, argv[i + 1]);
+ }
+
+
+
 
 
   /*
