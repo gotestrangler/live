@@ -276,7 +276,7 @@ Boolean parseRangeHeader(char const* buf,
   int check = 0; 
   while (1) {
     if (*buf == '\0'){
-      fprintf(stderr, "   return false\n");
+      //fprintf(stderr, "   return false\n");
       return False; // not found
     } 
 

@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 ////////// GenericMediaServer implementation //////////
 
 void GenericMediaServer::addServerMediaSession(ServerMediaSession* serverMediaSession) {
-  fprintf(stdout, "GENERIC, ADDSERVERMEDIASESSION ((((((((((((((((((( \n");
+  //fprintf(stdout, "GENERIC, ADDSERVERMEDIASESSION ((((((((((((((((((( \n");
   if (serverMediaSession == NULL){
     //fprintf(stderr, "Ok, ADDSERVERMEDIASESSION ((((((((((((((((((( BUT ITS NOT, return\n");
     return;
@@ -45,37 +45,37 @@ void GenericMediaServer::addServerMediaSession(ServerMediaSession* serverMediaSe
 ServerMediaSession* GenericMediaServer
 ::lookupServerMediaSession(char const* streamName, Boolean /*isFirstLookupInSession*/) {
   // Default implementation:
-  fprintf(stderr, "Ok, lookupServer: %s\n", streamName);
+  //fprintf(stderr, "Ok, lookupServer: %s\n", streamName);
 
 
   ServerMediaSession* retur = (ServerMediaSession*)(fServerMediaSessions->Lookup(streamName));
   if(retur == NULL){
     
-    fprintf(stderr, "Veldig rart, noe feil med hashmappen eller?: %d\n", fServerMediaSessions->numEntries());
+    //fprintf(stderr, "Veldig rart, noe feil med hashmappen eller?: %d\n", fServerMediaSessions->numEntries());
   }
   return retur;
 }
 
 void GenericMediaServer::removeServerMediaSession(ServerMediaSession* serverMediaSession) {
-  fprintf(stderr, "removeServerMediaSession 2\n");
+  //fprintf(stderr, "removeServerMediaSession 2\n");
 
   if (serverMediaSession == NULL){
-    fprintf(stderr, "removeServerMediaSession  === NULL\n");
+    //fprintf(stderr, "removeServerMediaSession  === NULL\n");
     return;
   } 
   
   fServerMediaSessions->Remove(serverMediaSession->streamName());
   if (serverMediaSession->referenceCount() == 0) {
-    fprintf(stderr, "removeServerMediaSession  == CLOSE\n");
+    //fprintf(stderr, "removeServerMediaSession  == CLOSE\n");
     Medium::close(serverMediaSession);
   } else {
-    fprintf(stderr, "removeServerMediaSession  === deletewhenunreferenced\n");
+    //fprintf(stderr, "removeServerMediaSession  === deletewhenunreferenced\n");
     serverMediaSession->deleteWhenUnreferenced() = True;
   }
 }
 
 void GenericMediaServer::removeServerMediaSession(char const* streamName) {
-  fprintf(stderr, "removeServerMediaSession 1 \n");
+  //fprintf(stderr, "removeServerMediaSession 1 \n");
   removeServerMediaSession(GenericMediaServer::lookupServerMediaSession(streamName));
 }
 
@@ -189,8 +189,8 @@ int GenericMediaServer::setUpOurSocket(UsageEnvironment& env, Port& ourPort) {
       if (!getSourcePort(env, ourSocket, ourPort)) break;
     }
 
-    fprintf(stderr, "       setUpOurSocket -> PORT: %d\n", htons(ourPort.num()));
-    fprintf(stderr, "       setUpOurSocket -> PORT: %d\n", ntohs(ourPort.num()));
+    //fprintf(stderr, "       setUpOurSocket -> PORT: %d\n", htons(ourPort.num()));
+    //fprintf(stderr, "       setUpOurSocket -> PORT: %d\n", ntohs(ourPort.num()));
     
     return ourSocket;
   } while (0);
@@ -219,8 +219,9 @@ void GenericMediaServer::incomingConnectionHandlerOnSocket(int serverSocket) {
     }
     return;
   }
-  fprintf(stderr, "       incomingConnectionHandlerOnSocket-> PORT: %d\n", htons(clientAddr.sin_port) );
-  fprintf(stderr, "       incomingConnectionHandlerOnSocket-> PORT: %d\n", ntohs(clientAddr.sin_port));
+  //fprintf(stderr, "       incomingConnectionHandlerOnSocket-> PORT: %d\n", htons(clientAddr.sin_port) );
+  //fprintf(stderr, "       incomingConnectionHandlerOnSocket-> PORT: %d\n", ntohs(clientAddr.sin_port));
+
   ignoreSigPipeOnSocket(clientSocket); // so that clients on the same host that are killed don't also kill us
   makeSocketNonBlocking(clientSocket);
   increaseSendBufferTo(envir(), clientSocket, 50*1024);

@@ -47,13 +47,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 OutputSocket::OutputSocket(UsageEnvironment& env)
   : Socket(env, 0 /* let kernel choose port */),
     fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/) {
-      fprintf(stderr, "\n made groupsock and let kernel choose port\n");
+      //fprintf(stderr, "\n made groupsock and let kernel choose port\n");
 }
 
 OutputSocket::OutputSocket(UsageEnvironment& env, Port port)
   : Socket(env, port),
     fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/) {
-      fprintf(stderr, "\n made groupsock with port: %hu\n", port.num());
+      //fprintf(stderr, "\n made groupsock with port: %hu\n", port.num());
 }
 
 OutputSocket::~OutputSocket() {

@@ -103,32 +103,32 @@ ServerMediaSession::addSubsession(ServerMediaSubsession* subsession) {
         ettercast->getInstances(serverRTPPort, serverRTCPPort);
 
 
-        fprintf(stderr, "       addSubsession -> RTSPSINK PORT: %hu\n", (serverRTPPort.num()));
+        //fprintf(stderr, "       addSubsession -> RTSPSINK PORT: %hu\n", (serverRTPPort.num()));
   
-        fprintf(stderr, "       addSubsession -> RTCP PORT: %hu\n", (serverRTCPPort.num()));
+        //fprintf(stderr, "       addSubsession -> RTCP PORT: %hu\n", (serverRTCPPort.num()));
 
   
 
-  fprintf(stderr, "       addSubsession\n");
+  //fprintf(stderr, "       addSubsession\n");
   if (subsession->fParentSession != NULL){
-    fprintf(stderr, "       addSubsession - return false\n");
+    //fprintf(stderr, "       addSubsession - return false\n");
     return False; // it's already used
   } 
 
-  fprintf(stderr, "       addSubsession 3 \n");
+  //fprintf(stderr, "       addSubsession 3 \n");
 
   if (fSubsessionsTail == NULL) {
-    fprintf(stderr, "       addSubsession - this is now head/tail\n");
+    //fprintf(stderr, "       addSubsession - this is now head/tail\n");
     fSubsessionsHead = subsession;
   } else {
-    fprintf(stderr, "       addSubsession - this is now tail\n");
+    //fprintf(stderr, "       addSubsession - this is now tail\n");
     fSubsessionsTail->fNext = subsession;
   }
   fSubsessionsTail = subsession;
 
   subsession->fParentSession = this;
   subsession->fTrackNumber = ++fSubsessionCounter;
-  fprintf(stderr, "       addSubsession - return true\n");
+  //fprintf(stderr, "       addSubsession - return true\n");
   return True;
 }
 
@@ -246,7 +246,7 @@ char* ServerMediaSession::generateSDPDescription() {
 
         int portnum = serverRTPPort.num();
  
-        fprintf(stderr, "        IN YOUR generateSDPDescription() -> RTSPSINK PORT: %hu\n", portnum );
+        //fprintf(stderr, "        IN YOUR generateSDPDescription() -> RTSPSINK PORT: %hu\n", portnum );
 
         portnum = serverRTCPPort.num();
     
@@ -261,7 +261,7 @@ char* ServerMediaSession::generateSDPDescription() {
   AddressString ipAddressStr(ourIPAddress(envir()));
   unsigned ipAddressStrSize = strlen(ipAddressStr.val());
 
-  fprintf(stderr, "       IN YOUR generateSDPDescription() -> RTCP PORT: %hu and IP Address: %s\n", portnum, ipAddressStr.val());
+  //fprintf(stderr, "       IN YOUR generateSDPDescription() -> RTCP PORT: %hu and IP Address: %s\n", portnum, ipAddressStr.val());
 
   // For a SSM sessions, we need a "a=source-filter: incl ..." line also:
   char* sourceFilterLine;
@@ -274,7 +274,7 @@ char* ServerMediaSession::generateSDPDescription() {
 
     sourceFilterLine = new char[sourceFilterFmtSize];
     sprintf(sourceFilterLine, sourceFilterFmt, ipAddressStr.val());
-    fprintf(stderr, "       IN YOUR generateSDPDescription() -> sourcefilterline: %s\n", sourceFilterLine);
+    //fprintf(stderr, "       IN YOUR generateSDPDescription() -> sourcefilterline: %s\n", sourceFilterLine);
   } else {
     //fprintf(stderr, "       generateSDPDescription() -> NOT SSM\n");
     sourceFilterLine = strDup("");
@@ -293,7 +293,7 @@ char* ServerMediaSession::generateSDPDescription() {
     for (subsession = fSubsessionsHead; subsession != NULL; subsession = subsession->fNext) {
       char const* sdpLines = subsession->sdpLines();
       if (sdpLines == NULL){
-        fprintf(stderr, "       generateSDPDescription() -> sdpLines == NULL, the media's not available - CONTINUE\n");
+        //fprintf(stderr, "       generateSDPDescription() -> sdpLines == NULL, the media's not available - CONTINUE\n");
         continue; // the media's not available
       }else{
         //fprintf(stderr, "       generateSDPDescription() -> sdpLines:\n %s\n", sdpLines);
@@ -432,7 +432,7 @@ char const* ServerMediaSubsession::trackId() {
   if (fTrackNumber == 0) return NULL; // not yet in a ServerMediaSession
 
   if (fTrackId == NULL) {
-    fprintf(stderr, "       ***********this is where it becomes track%d\n", fTrackNumber);
+    //fprintf(stderr, "       ***********this is where it becomes track%d\n", fTrackNumber);
     char buf[100];
     sprintf(buf, "track%d", fTrackNumber);
     fTrackId = strDup(buf);

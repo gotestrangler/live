@@ -147,7 +147,6 @@ RTSPServer::RTSPServer(UsageEnvironment& env, int ourSocket, Port ourPort, UserA
     fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)),
     fPendingRegisterOrDeregisterRequests(HashTable::create(ONE_WORD_HASH_KEYS)),
     fRegisterOrDeregisterRequestCounter(0), fAuthDB(authDatabase), fAllowStreamingRTPOverTCP(True) {
-      fprintf(stderr, "\n 3\n");
 }
 
 
@@ -1675,7 +1674,7 @@ void RTSPServer::RTSPClientSession
     = fOurRTSPServer.rtspURL(fOurServerMediaSession, ourClientConnection->fClientInputSocket);
   unsigned rtspURLSize = strlen(rtspURL);
   
-  fprintf(stderr, "HANDLE PLAY!!!!\n");
+  fprintf(stderr, "############### HANDLE PLAY!!!! ###############\n");
   // Parse the client's "Scale:" header, if any:
   float scale;
   Boolean sawScaleHeader = parseScaleHeader(fullRequestStr, scale);

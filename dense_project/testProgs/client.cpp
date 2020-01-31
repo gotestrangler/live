@@ -529,7 +529,7 @@ void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes
   envir() << "\n";
 #endif
 #else
-  printf("__FUNCTION__  = %s\n", __FUNCTION__ );
+  //printf("__FUNCTION__  = %s\n", __FUNCTION__ );
  if(0 == strncmp(fSubsession.codecName(), "H264", 16))
  { 
   unsigned char nalu_header[4] = { 0, 0, 0, 1 };   
@@ -537,14 +537,17 @@ void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes
   unsigned int num = 0;    
   
   SPropRecord *pSPropRecord;
-  pSPropRecord = parseSPropParameterSets(fSubsession.fmtp_spropparametersets(), num);  
+  pSPropRecord = parseSPropParameterSets(fSubsession.fmtp_spropparametersets(), num); 
+
+  printf("\tHave parsed paramter sets for this frame of data. The number is: %d\n", num);
   
   unsigned int extraLen;
   extraLen = 0;
 
-  //p_record[0] is sps 
-  //p+record[1] is pps
+  //pSPropRecord[0] is sps 
+  //pSPropRecord[1] is pps
   for(unsigned int i = 0; i < num; i++){ 
+   printf("\tI is: %d\n", i);
    memcpy(&extraData[extraLen], &nalu_header[0], 4);
    extraLen += 4;
    memcpy(&extraData[extraLen], pSPropRecord[i].sPropBytes, pSPropRecord[i].sPropLength);

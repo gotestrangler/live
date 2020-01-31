@@ -121,7 +121,7 @@ RTPInterface::RTPInterface(Medium* owner, Groupsock* gs)
     fNextTCPReadStreamChannelId(0xFF), fReadHandlerProc(NULL),
     fAuxReadHandlerFunc(NULL), fAuxReadHandlerClientData(NULL) {
 
-    fprintf(stderr, "\n     Making RTPInterface with PORT: %hu\n", (gs->port().num()));
+    //fprintf(stderr, "\n     Making RTPInterface with PORT: %hu\n", (gs->port().num()));
 
   // Make the socket non-blocking, even though it will be read from only asynchronously, when packets arrive.
   // The reason for this is that, in some OSs, reads on a blocking socket can (allegedly) sometimes block,
@@ -145,7 +145,7 @@ void RTPInterface::setStreamSocket(int sockNum,
   
   addStreamSocket(sockNum, streamChannelId);
 
-  fprintf(stderr, "\n     setStreamSocket with PORT: %hu\n", (fGS->port().num()));
+  //fprintf(stderr, "\n     setStreamSocket with PORT: %hu\n", (fGS->port().num()));
 
 }
 
@@ -167,7 +167,7 @@ void RTPInterface::addStreamSocket(int sockNum,
   SocketDescriptor* socketDescriptor = lookupSocketDescriptor(envir(), sockNum);
   socketDescriptor->registerRTPInterface(streamChannelId, this);
 
-  fprintf(stderr, "\n     addStreamSocket : %hu\n", (fGS->port().num()));
+  //fprintf(stderr, "\n     addStreamSocket : %hu\n", (fGS->port().num()));
 
 }
 
@@ -182,7 +182,7 @@ static void deregisterSocket(UsageEnvironment& env, int sockNum, unsigned char s
 
 void RTPInterface::removeStreamSocket(int sockNum,
 				      unsigned char streamChannelId) {
-  fprintf(stderr, "\n     removeStreamSocket with PORT: %hu\n", fGS->port().num());
+  //fprintf(stderr, "\n     removeStreamSocket with PORT: %hu\n", fGS->port().num());
 
   
   // Remove - from our list of 'TCP streams' - the record of the (sockNum,streamChannelId) pair.
@@ -268,7 +268,7 @@ Boolean RTPInterface::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 				 int& tcpSocketNum, unsigned char& tcpStreamChannelId,
 				 Boolean& packetReadWasIncomplete) {
 
-  fprintf(stderr, "\n     RTPInterface::handleRead with PORT: %hu\n", (fGS->port().num()));
+  //fprintf(stderr, "\n     RTPInterface::handleRead with PORT: %hu\n", (fGS->port().num()));
       
   packetReadWasIncomplete = False; // by default
   Boolean readSuccess;

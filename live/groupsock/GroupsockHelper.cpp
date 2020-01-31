@@ -53,7 +53,7 @@ netAddressBits ReceivingInterfaceAddr = INADDR_ANY;
 
 Groupsock* createNewGroupSock(UsageEnvironment& env, struct in_addr const& groupAddr,
 	    Port port, u_int8_t ttl){
-        fprintf(stderr, "createNewGroupSock\n");
+        //fprintf(stderr, "createNewGroupSock\n");
         return new Groupsock(env, groupAddr, port, ttl);
       }
 
@@ -272,8 +272,8 @@ Boolean setSocketKeepAlive(int sock) {
 int setupStreamSocket(UsageEnvironment& env,
                       Port port, Boolean makeNonBlocking, Boolean setKeepAlive) {
 
-  fprintf(stderr, "       setupStreamSocket-> PORT: %d\n", htons(port.num()));
-  fprintf(stderr, "       setupStreamSocket-> PORT: %d\n", ntohs(port.num()));
+  //fprintf(stderr, "       setupStreamSocket-> PORT: %d\n", htons(port.num()));
+  //fprintf(stderr, "       setupStreamSocket-> PORT: %d\n", ntohs(port.num()));
 
   if (!initializeWinsockIfNecessary()) {
     socketErr(env, "Failed to initialize 'winsock': ");
@@ -389,8 +389,8 @@ int readSocket(UsageEnvironment& env,
     return -1;
   }
 
-    fprintf(stderr, "       readsocket -> PORT: %hu\n", htons(fromAddress.sin_port));
-    fprintf(stderr, "       readsocket -> PORT: %hu\n", ntohs(fromAddress.sin_port));
+    //fprintf(stderr, "       readsocket -> PORT: %hu\n", htons(fromAddress.sin_port));
+    //fprintf(stderr, "       readsocket -> PORT: %hu\n", ntohs(fromAddress.sin_port));
 
   return bytesRead;
 }
@@ -400,8 +400,8 @@ Boolean writeSocket(UsageEnvironment& env,
 		    u_int8_t ttlArg,
 		    unsigned char* buffer, unsigned bufferSize) {
 
-  fprintf(stderr, "       writesocket -> PORT: %hu\n", htons(portNum));
-  fprintf(stderr, "       writesocket -> PORT: %hu\n", ntohs(portNum));
+  //fprintf(stderr, "       writesocket -> PORT: %hu\n", htons(portNum));
+  //fprintf(stderr, "       writesocket -> PORT: %hu\n", ntohs(portNum));
   // Before sending, set the socket's TTL:
 #if defined(__WIN32__) || defined(_WIN32)
 #define TTL_TYPE int
@@ -702,8 +702,8 @@ netAddressBits ourIPAddress(UsageEnvironment& env) {
       testAddr.s_addr = our_inet_addr("228.67.43.91"); // arbitrary
       Port testPort(15000); // ditto
 
-      fprintf(stderr, "Finding our ip address, by setting up a datagramsocket, using port: %d\n", htons(testPort.num()));
-      fprintf(stderr, "Finding our ip address, by setting up a datagramsocket, using port: %d\n", ntohs(testPort.num()));
+      //fprintf(stderr, "Finding our ip address, by setting up a datagramsocket, using port: %d\n", htons(testPort.num()));
+      //fprintf(stderr, "Finding our ip address, by setting up a datagramsocket, using port: %d\n", ntohs(testPort.num()));
 
       sock = setupDatagramSocket(env, testPort);
       if (sock < 0) break;

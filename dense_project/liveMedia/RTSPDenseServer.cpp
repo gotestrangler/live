@@ -26,7 +26,7 @@ RTSPDenseServer* RTSPDenseServer
 	    Boolean streamRTPOverTCP, int number) {
 
 
-  fprintf(stderr, "\n 2 number is: %d\n", number);
+  //fprintf(stderr, "\n 2 number is: %d\n", number);
   int ourSocket = setUpOurSocket(env, ourPort);
   if (ourSocket == -1) return NULL;
 
@@ -57,27 +57,27 @@ RTSPDenseServer::~RTSPDenseServer() {
 
 void RTSPDenseServer::DenseSession::setRTPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl){
 
-  fprintf(stderr, "setRTPGSock\n");
+   //fprintf(stderr, "setRTPGSock\n");
    Groupsock* gsock = createNewGroupSock(env, destinationAddress, rtpPort, ttl);
    rtpGroupsock = gsock; 
 
   AddressString groupAddressStr(rtpGroupsock->groupAddress());
-  fprintf(stderr, "       setRTPGSock -> AddressString groupAddressStr: %s\n", groupAddressStr.val());
+  //fprintf(stderr, "       setRTPGSock -> AddressString groupAddressStr: %s\n", groupAddressStr.val());
   unsigned short portNum = ntohs(rtpGroupsock->port().num());
-  fprintf(stderr, "       setRTPGSock -> portnum: %hu\n", portNum);
+  //fprintf(stderr, "       setRTPGSock -> portnum: %hu\n", portNum);
 
 
 }
 
 void RTSPDenseServer::DenseSession::setRTCPGSock(UsageEnvironment &env, in_addr destinationAddress, Port rtpPort, u_int8_t ttl){
-  fprintf(stderr, "setRTPCONTROL gsock\n");
+  //fprintf(stderr, "setRTPCONTROL gsock\n");
   Groupsock* gsock = createNewGroupSock(env, destinationAddress, rtpPort, ttl);
   rtcpGroupsock = gsock;
 
   AddressString groupAddressStr(rtcpGroupsock->groupAddress());
-  fprintf(stderr, "       setRTPCONTROL gsock -> AddressString groupAddressStr: %s\n", groupAddressStr.val());
+  //fprintf(stderr, "       setRTPCONTROL gsock -> AddressString groupAddressStr: %s\n", groupAddressStr.val());
   unsigned short portNum = ntohs(rtcpGroupsock->port().num());
-  fprintf(stderr, "       setRTPCONTROL gsock -> portnum: %hu\n", portNum);
+  //fprintf(stderr, "       setRTPCONTROL gsock -> portnum: %hu\n", portNum);
 
 }
 
@@ -90,7 +90,7 @@ RTSPDenseServer::createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSin
         ByteStreamFileSource* fileSource,
         H264VideoStreamFramer* videoSource) {
 
-  fprintf(stderr, "creTING NEW DENSE SESSION:\n" );
+  //fprintf(stderr, "creTING NEW DENSE SESSION:\n" );
   return new DenseSession(rtpG, rtcpG, videoSink, rtcp, 
         passiveSession,
         denseSession,
@@ -116,8 +116,8 @@ RTSPDenseServer::RTSPDenseClientConnection::~RTSPDenseClientConnection() {
 
 RTSPServer::RTSPClientConnection*
 RTSPDenseServer::createNewClientConnection(int clientSocket, struct sockaddr_in clientAddr) {
-  fprintf(stderr, "creTING NEW CLIENT CONNECTION: %d\nn", htons(clientAddr.sin_port));
-  fprintf(stderr, "creTING NEW CLIENT CONNECTION: %d\n", ntohs(clientAddr.sin_port));
+  //fprintf(stderr, "creTING NEW CLIENT CONNECTION: %d\nn", htons(clientAddr.sin_port));
+  //fprintf(stderr, "creTING NEW CLIENT CONNECTION: %d\n", ntohs(clientAddr.sin_port));
   return new RTSPDenseClientConnection(*this, clientSocket, clientAddr);
 
   
@@ -294,7 +294,7 @@ static Boolean parsePlayNowHeader(char const* buf) {
 void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytesRead) {
   int numBytesRemaining = 0;
   ++fRecursionCount;
-  fprintf(stderr, "//////////// handleRequestBytes//////////////\n");
+  //fprintf(stderr, "//////////// handleRequestBytes//////////////\n");
     do {
     RTSPDenseServer::RTSPDenseClientSession* clientSession = NULL;
 
@@ -454,16 +454,16 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
       } else if (urlPreSuffix[0] == '\0' && urlSuffix[0] == '*' && urlSuffix[1] == '\0') {
 	// The special "*" URL means: an operation on the entire server.  This works only for GET_PARAMETER and SET_PARAMETER:
 	if (strcmp(cmdName, "GET_PARAMETER") == 0) {
-    fprintf(stderr, "GET_PARAMETER\n");
+    //fprintf(stderr, "GET_PARAMETER\n");
 	  handleCmd_GET_PARAMETER((char const*)fRequestBuffer);
 	} else if (strcmp(cmdName, "SET_PARAMETER") == 0) {
-    fprintf(stderr, "SET_PARAMETER\n");
+    //fprintf(stderr, "SET_PARAMETER\n");
 	  handleCmd_SET_PARAMETER((char const*)fRequestBuffer);
 	} else {
 	  handleCmd_notSupported();
 	}
       } else if (strcmp(cmdName, "DESCRIBE") == 0) {
-        fprintf(stderr, "DESCRIBE\n");
+        //fprintf(stderr, "DESCRIBE\n");
 	handleCmd_DESCRIBE(urlPreSuffix, urlSuffix, (char const*)fRequestBuffer);
       } else if (strcmp(cmdName, "SETUP") == 0) {
 	Boolean areAuthenticated = True;
@@ -627,6 +627,8 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
 
 
 void afterPlaying1(void* /*clientData*/) {
+
+  fprintf(stderr, "AFTER PLAYING!");
   videoSink1->stopPlaying();
   Medium::close(videoSource1);
   // Note that this also closes the input file that this source read from.
@@ -645,9 +647,9 @@ void afterPlaying1(void* /*clientData*/) {
 void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *session, int number){
 
       fprintf(stderr, "/////////////// YOUR MAKE /////////////\n");
-      fprintf(stderr, "Checking input socket ID: %d\n", fClientInputSocket);
-      fprintf(stderr, "Checking output socket ID: %d\n", fClientOutputSocket);
-      fprintf(stderr, "ref of the densesession: %d\n", fOurRTSPServer.ref );
+      //fprintf(stderr, "Checking input socket ID: %d\n", fClientInputSocket);
+      //fprintf(stderr, "Checking output socket ID: %d\n", fClientOutputSocket);
+      //fprintf(stderr, "ref of the densesession: %d\n", fOurRTSPServer.ref );
 
 
         UsageEnvironment& env = envir();
@@ -660,9 +662,9 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         destinationAddress.s_addr = chooseRandomIPv4SSMAddress(env);
 
         const unsigned short rtpPortNum = 18888 + fOurRTSPServer.ref;
-        fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
+        //fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
         const unsigned short rtcpPortNum = rtpPortNum+ 1 + fOurRTSPServer.ref;
-        fprintf(stderr, "rtcpPortNum: %hu\n", rtcpPortNum);
+        //fprintf(stderr, "rtcpPortNum: %hu\n", rtcpPortNum);
         const unsigned char ttl = 255;
 
         Port rtpPort(rtpPortNum);
@@ -677,7 +679,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         //RTPSink* videoSink;
         firstsesh->videoSink = H264VideoRTPSink::createNew(env, firstsesh->rtpGroupsock, 96);
         videoSink1 = firstsesh->videoSink;
-        fprintf(stderr, "       Made Sink - CHECK INFO!! \n");
+        //fprintf(stderr, "       Made Sink - CHECK INFO!! \n");
 
         
         // Create (and start) a 'RTCP instance' for this RTP sink:
@@ -687,7 +689,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         gethostname((char*)CNAME, maxCNAMElen);
         CNAME[maxCNAMElen] = '\0'; // just in case
         // *env << "CNAME: " << CNAME  << "\n";
-        fprintf(stderr, "       Making RTCP with CNAME: %s\n", CNAME);
+        //fprintf(stderr, "       Making RTCP with CNAME: %s\n", CNAME);
         //RTCPInstance* rtcp;
         firstsesh->rtcp = RTCPInstance::createNew(env, firstsesh->rtcpGroupsock,
                 estimatedSessionBandwidth, CNAME,
@@ -695,11 +697,11 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
                 ,True ); // we're a SSM source
         // Note: This starts RTCP running automatically
 
-        fprintf(stderr, "       Made RTCP\n");
+        //fprintf(stderr, "       Made RTCP\n");
 
         session->addSubsession(PassiveServerMediaSubsession::createNew(*firstsesh->videoSink, firstsesh->rtcp));
 
-        fprintf(stderr, "       finsihed addservermediaession\n");
+        //fprintf(stderr, "       finsihed addservermediaession\n");
 
         char const* inputFileName = (char const*)fOurRTSPServer.filenames->Lookup((char const*)number);
         //char const* inputFileName2 = "output.264";
@@ -753,11 +755,11 @@ void RTSPDenseServer::RTSPDenseClientConnection
     }
     strcat(urlTotalSuffix, urlSuffix);
 
-    fprintf(stderr, "     Have assembled url-total-suffix: %s\n", urlTotalSuffix);
+    //fprintf(stderr, "     Have assembled url-total-suffix: %s\n", urlTotalSuffix);
 
   
     if (!authenticationOK("DESCRIBE", urlTotalSuffix, fullRequestStr)){
-      fprintf(stderr, "     describebreak\n");
+      //fprintf(stderr, "     describebreak\n");
       break;
     } 
 
@@ -766,20 +768,20 @@ void RTSPDenseServer::RTSPDenseClientConnection
     // for "application/sdp", because that's what we're sending back #####
     
     // Begin by looking up the "ServerMediaSession" object for the specified "urlTotalSuffix":
-    fprintf(stderr, "\nTryin to find it first\n");
+    //fprintf(stderr, "\nTryin to find it first\n");
     session = fOurServer.lookupServerMediaSession(urlTotalSuffix);
     if (session == NULL) {
-      fprintf(stderr, "This is describe -> the lookupservermediasession = NULL\n");
+      //fprintf(stderr, "This is describe -> the lookupservermediasession = NULL\n");
       handleCmd_notFound();
       break;
     }
       
       int fNumStreamStates = session->numSubsessions();
-      fprintf(stderr, "     Before make() the number of subsessions is: %d\n", fNumStreamStates);
+      //fprintf(stderr, "     Before make() the number of subsessions is: %d\n", fNumStreamStates);
       
       
      
-        fprintf(stderr, "\nNumber number number: %d \n", fOurRTSPServer.number);
+        //fprintf(stderr, "\nNumber number number: %d \n", fOurRTSPServer.number);
 
         int i;
         for(i = 0; i < fOurRTSPServer.number; i++){
@@ -825,7 +827,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
     }
     unsigned sdpDescriptionSize = strlen(sdpDescription);
 
-    fprintf(stderr, "   have assembled a sdpDescription: \n%s\n", sdpDescription);
+    //fprintf(stderr, "   have assembled a sdpDescription: \n%s\n", sdpDescription);
     
     
     
@@ -871,7 +873,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
 
 void RTSPDenseServer::RTSPDenseClientConnection::handleCmd_OPTIONS(char* urlSuffix) {
 
-  fprintf(stderr, "/////////////// YOUR OPTIONS /////////////\n");
+  //fprintf(stderr, "/////////////// YOUR OPTIONS /////////////\n");
 
     ServerMediaSession * session = fOurServer.lookupServerMediaSession(urlSuffix);
     /*
@@ -910,7 +912,7 @@ void RTSPDenseServer::RTSPDenseClientSession
   char* concatenatedStreamName = NULL; // in the normal case
 
   fprintf(stderr, "############### DIN SETUP ###############\n");
-  fprintf(stderr, "urlPreSuffix(streamname): %s        urlSuffix(subsession/track): %s \n", urlPreSuffix, urlSuffix);
+  //fprintf(stderr, "urlPreSuffix(streamname): %s        urlSuffix(subsession/track): %s \n", urlPreSuffix, urlSuffix);
   
   do {
     // First, make sure the specified stream name exists:
@@ -929,7 +931,7 @@ void RTSPDenseServer::RTSPDenseClientSession
       trackId = NULL;
       
       // Check again:
-      fprintf(stderr, "   handleCmd_SETUP Server Media Session = checking the concatenated stream name: %s\n", streamName);
+      //fprintf(stderr, "   handleCmd_SETUP Server Media Session = checking the concatenated stream name: %s\n", streamName);
       sms = fOurServer.lookupServerMediaSession(streamName, fOurServerMediaSession == NULL);
     }
     if (sms == NULL) {
@@ -1116,7 +1118,6 @@ void RTSPDenseServer::RTSPDenseClientSession
     char sessionIdStr[8+1];
     sprintf(sessionIdStr, "%08X", fOurSessionId);
     sessionIdStr[8] = '\0';
-    fprintf(stderr, "   hei hei 2 -> %s\n", sessionIdStr);
 
     subsession->getStreamParameters(fOurSessionId, ourClientConnection->fClientAddr.sin_addr.s_addr,
 				    clientRTPPort, clientRTCPPort,
@@ -1124,8 +1125,6 @@ void RTSPDenseServer::RTSPDenseClientSession
 				    destinationAddress, destinationTTL, fIsMulticast,
 				    serverRTPPort, serverRTCPPort,
 				    fStreamStates[trackNum].streamToken);
-
-    fprintf(stderr, "   hei hei 3\n");
 
     SendingInterfaceAddr = origSendingInterfaceAddr;
     ReceivingInterfaceAddr = origReceivingInterfaceAddr;

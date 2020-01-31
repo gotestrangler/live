@@ -141,7 +141,7 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
     fAppHandlerTask(NULL), fAppHandlerClientData(NULL) {
 
 
-      fprintf(stderr, "\n       Making RTCP with PORT: %hu\n", RTCPgs->port().num());
+      //fprintf(stderr, "\n       Making RTCP with PORT: %hu\n", RTCPgs->port().num());
 
 
 

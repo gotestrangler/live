@@ -41,16 +41,16 @@ PassiveServerMediaSubsession
           Groupsock const& control = (rtcpInstance)->groupsockBeingUsed();
   
 
-        fprintf(stderr, "\n     making new PassiveServerMediaSubsession with RTPSINKPORT: %hu\n", (gs.port().num()));
-        fprintf(stderr, "       making new PassiveServerMediaSubsession with RTCP PORT: %hu\n", (control.port().num())); 
+        //fprintf(stderr, "\n     making new PassiveServerMediaSubsession with RTPSINKPORT: %hu\n", (gs.port().num()));
+        //fprintf(stderr, "       making new PassiveServerMediaSubsession with RTCP PORT: %hu\n", (control.port().num())); 
 
 
           Groupsock const& fgs = fRTPSink.groupsockBeingUsed();
 
           Groupsock const& fcontrol = (fRTCPInstance)->groupsockBeingUsed();
 
-        fprintf(stderr, "\n     MEN MEN MEN PassiveServerMediaSubsession with RTPSINKPORT: %hu\n", (fgs.port().num()));
-        fprintf(stderr, "       MEN MEN MEN PassiveServerMediaSubsession with RTCP PORT: %hu\n", (fcontrol.port().num())); 
+        //fprintf(stderr, "\n     MEN MEN MEN PassiveServerMediaSubsession with RTPSINKPORT: %hu\n", (fgs.port().num()));
+        //fprintf(stderr, "       MEN MEN MEN PassiveServerMediaSubsession with RTCP PORT: %hu\n", (fcontrol.port().num())); 
 
   fClientRTCPSourceRecords = HashTable::create(ONE_WORD_HASH_KEYS);
 }
@@ -99,12 +99,12 @@ PassiveServerMediaSubsession::sdpLines() {
 
     Groupsock const& control = (fRTCPInstance)->groupsockBeingUsed();
 
-    fprintf(stderr, "       sdpLines() -> RTSPSINK PORT: %hu\n", (gs.port().num()));
+    //fprintf(stderr, "       sdpLines() -> RTSPSINK PORT: %hu\n", (gs.port().num()));
 
-    fprintf(stderr, "       sdpLines() -> RTCP PORT: %hu\n", (control.port().num()));
+    //fprintf(stderr, "       sdpLines() -> RTCP PORT: %hu\n", (control.port().num()));
 
     AddressString groupAddressStr(gs.groupAddress());
-    fprintf(stderr, "       sdpLines() -> AddressString groupAddressStr: %s\n", groupAddressStr.val());
+    //fprintf(stderr, "       sdpLines() -> AddressString groupAddressStr: %s\n", groupAddressStr.val());
     unsigned short portNum = ntohs(gs.port().num());
     //fprintf(stderr, "       sdpLines() -> unsigned short portNum = ntohs(gs.port().num()): %d\n", gs.port().num());
     unsigned char ttl = gs.ttl();
@@ -162,13 +162,13 @@ PassiveServerMediaSubsession::sdpLines() {
 	    trackId()); // a=control:<track-id>
     delete[] (char*)rangeLine; delete[] rtpmapLine;
 
-    fprintf(stderr, "       INNI sdpLines() -> \n%s\n", sdpLines);
+    //fprintf(stderr, "       INNI sdpLines() -> \n%s\n", sdpLines);
 
     fSDPLines = strDup(sdpLines);
     delete[] sdpLines;
   }
 
-  fprintf(stderr, "       sdpLines() -> fSDPLines != NULL -> returninng fSDPLines\n");
+  //fprintf(stderr, "       sdpLines() -> fSDPLines != NULL -> returninng fSDPLines\n");
 
   return fSDPLines;
 }
@@ -192,8 +192,8 @@ void PassiveServerMediaSubsession::getInstances(Port& serverRTPPort, Port& serve
 
   serverRTCPPort = rtcpGS.port();
 
-  fprintf(stderr, "       getInstances -> RTSPSINK PORT: %hu\n", serverRTPPort.num());
-  fprintf(stderr, "        getInstances -> RTCP PORT: %hu\n", serverRTCPPort.num());
+  //fprintf(stderr, "        getInstances -> RTSPSINK PORT: %hu\n", serverRTPPort.num());
+  //fprintf(stderr, "        getInstances -> RTCP PORT: %hu\n", serverRTCPPort.num());
 
   AddressString ipAddressStr(ourIPAddress(envir()));
   unsigned ipAddressStrSize = strlen(ipAddressStr.val());      
@@ -204,7 +204,7 @@ void PassiveServerMediaSubsession::getInstances(Port& serverRTPPort, Port& serve
   sprintf(adr, ipAddressStr.val());
   adr[ipAddressStrSize + 1] = '\0';
         
-  fprintf(stderr, "        getInstances -> RTSP ADDRESS: %s\n", adr);  
+  //fprintf(stderr, "        getInstances -> RTSP ADDRESS: %s\n", adr);  
 
 
 
@@ -231,8 +231,8 @@ void PassiveServerMediaSubsession
 
   serverRTPPort = gs.port();
 
-  fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP RTP-Port: %d\n", htons(serverRTPPort.num()));
-  fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP RTP-Port: %d\n", ntohs(serverRTPPort.num()));
+  //fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP RTP-Port: %d\n", htons(serverRTPPort.num()));
+  //fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP RTP-Port: %d\n", ntohs(serverRTPPort.num()));
 
 
     if (fRTCPInstance != NULL) {
@@ -240,17 +240,17 @@ void PassiveServerMediaSubsession
     Groupsock* rtcpGS = fRTCPInstance->RTCPgs();
     serverRTCPPort = rtcpGS->port();
 
-    fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP RTCP-Port: %d\n", htons(serverRTCPPort.num()));
-    fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP RTCP-Port: %d\n", ntohs(serverRTCPPort.num()));
+    //fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP RTCP-Port: %d\n", htons(serverRTCPPort.num()));
+    //fprintf(stderr, "       getstreamparameters -> HAVE LOOKED UP RTCP-Port: %d\n", ntohs(serverRTCPPort.num()));
 
   }else{
-    fprintf(stderr, "       getstreamparameters -> RTCP is NULL :( \n");
+    //fprintf(stderr, "       getstreamparameters -> RTCP is NULL :( \n");
   }
 
 
 
   if (destinationTTL == 255){
-    fprintf(stderr, "       getstreamparameters -> destinationTTL == 255\n");
+    //fprintf(stderr, "       getstreamparameters -> destinationTTL == 255\n");
     destinationTTL = gs.ttl();
   } 
 
@@ -259,14 +259,14 @@ void PassiveServerMediaSubsession
     
 
     destinationAddress = gs.groupAddress().s_addr;
-    fprintf(stderr, "       getstreamparameters -> normal case getting groupaddress\n");
+    //fprintf(stderr, "       getstreamparameters -> normal case getting groupaddress\n");
   } else { // use the client-specified destination address instead:
-    fprintf(stderr, "       getstreamparameters -> use the client-specified destination address insteadn");
+    //fprintf(stderr, "       getstreamparameters -> use the client-specified destination address insteadn");
     struct in_addr destinationAddr; destinationAddr.s_addr = destinationAddress;
     gs.changeDestinationParameters(destinationAddr, 0, destinationTTL);
     if (fRTCPInstance != NULL) {
 
-      fprintf(stderr, "       getstreamparameters -> fRTCPInstance != NULL - Changing paramters\n");
+      //fprintf(stderr, "       getstreamparameters -> fRTCPInstance != NULL - Changing paramters\n");
       
  
       Groupsock* rtcpGS = fRTCPInstance->RTCPgs();
@@ -282,7 +282,7 @@ void PassiveServerMediaSubsession
   RTCPSourceRecord* source = new RTCPSourceRecord(clientAddress, clientRTCPPort);
 
 
-  fprintf(stderr, "       getstreamparameters -> normal case getting groupaddress: %d\n", clientRTCPPort.num());
+  //fprintf(stderr, "       getstreamparameters -> normal case getting groupaddress: %d\n", clientRTCPPort.num());
 
   fClientRTCPSourceRecords->Add((char const *)clientSessionId, source);
 
