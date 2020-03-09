@@ -1,0 +1,26 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{FirstWriting}
+\author{gote.strindler }
+\date{March 2020}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction and Motivation}
+
+\subsection{Why live-streaming}
+
+The internet is more and more streaming based. According to the 2019 Global Internet Phenomena Report over 60\% of downstream traffic is now streaming. With the rise of platforms such as Twitch and Facebook-Stream it is also safe to say that live content have made the move from more traditional broadcast media. Bigger live-events such as sports and e-sports, news and weather reporting, political events etc. etc. will always be an obvious source of this traffic, but the biggest rise in streams comes from individuals themselves sharing their lives and activities. With this in mind it is probable that the supply and demand will only continue to increase. The transport protocols utilized for streaming have changed over the years. From the beginning of video streaming push-based UDP was used. This was because the guarantee-mechanisms in TCP with re-transmissions built in only causes unnecessary delays with packet loss. However the nature of proxies and firewalls made this increasingly difficult after a while because more and more of them blocked UDP-traffic on account of security concerns. Therefore streaming largely started using pull based adaptive bitrate streams over HTTP after a while. 
+
+\subsection{To DASH?}
+Adaptive Bitrate Streaming over HTTP has become the accepted standard for delivering video to a broad range of devices. Because the data is requested from the client it traverses proxies and firewalls with ease. The protocol works by dividing content into time slices of different bitrates/quality. These slices are in themselves small, fully functional audio/video entities not dependent on previous(or following) slices to be decoded and played. An index of where clients can fetch these slices are distributed. If the content is not live the index for all the slices can be created. If the content is live, the index is smaller and the content change with time. 
+
+\subsection{Or not to DASH?}
+As a reaction and workaround of firewall/proxy-problems DASH works like a charm. This does not however mean that DASH does not have its issues. Every client uses the index of slices and request them. The streams are unicast connections and therefore the same data is sent through the network to all clients, even if the request happens in close proximity both in time and location. Compared to a potential multicast stream this means increased workload for the servers and increased bandwidth needed from the network that in itself might lead to congestion problems. Another problem with DASH is that is is commonly used with web-caching to distribute the content closer to clients. These caches normally need to be synchronized. All slices have to be sent out to all the caches before the can be made available, resulting in longer delay for the content. In some live-events this is definitely an issue.   
+   
+
+
+\end{document}
