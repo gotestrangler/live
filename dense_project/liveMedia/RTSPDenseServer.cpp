@@ -746,6 +746,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
   char* sdpDescription = NULL;
   char* rtspURL = NULL;
   do {
+    fprintf(stderr, "/////////////// YOUR DESCRIBE /////////////\n");
     char urlTotalSuffix[2*RTSP_PARAM_STRING_MAX];
         // enough space for urlPreSuffix/urlSuffix'\0'
     urlTotalSuffix[0] = '\0';
@@ -755,7 +756,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
     }
     strcat(urlTotalSuffix, urlSuffix);
 
-    //fprintf(stderr, "     Have assembled url-total-suffix: %s\n", urlTotalSuffix);
+    fprintf(stderr, "     Have assembled url-total-suffix: %s\n", urlTotalSuffix);
 
   
     if (!authenticationOK("DESCRIBE", urlTotalSuffix, fullRequestStr)){
@@ -771,17 +772,17 @@ void RTSPDenseServer::RTSPDenseClientConnection
     //fprintf(stderr, "\nTryin to find it first\n");
     session = fOurServer.lookupServerMediaSession(urlTotalSuffix);
     if (session == NULL) {
-      //fprintf(stderr, "This is describe -> the lookupservermediasession = NULL\n");
+      fprintf(stderr, "This is describe -> the lookupservermediasession = NULL\n");
       handleCmd_notFound();
       break;
     }
       
       int fNumStreamStates = session->numSubsessions();
-      //fprintf(stderr, "     Before make() the number of subsessions is: %d\n", fNumStreamStates);
+      fprintf(stderr, "     Before make() the number of subsessions is: %d\n", fNumStreamStates);
       
       
      
-        //fprintf(stderr, "\nNumber number number: %d \n", fOurRTSPServer.number);
+        fprintf(stderr, "\nNumber number number: %d \n", fOurRTSPServer.number);
 
         int i;
         for(i = 0; i < fOurRTSPServer.number; i++){
@@ -810,7 +811,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
 
 
 
-    //fprintf(stderr, "This is describe -> the lookupservermediasession != NULL moving on\n");
+    fprintf(stderr, "This is describe -> the lookupservermediasession != NULL moving on\n");
     
     // Increment the "ServerMediaSession" object's reference count, in case someone removes it
     // while we're using it:
@@ -827,7 +828,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
     }
     unsigned sdpDescriptionSize = strlen(sdpDescription);
 
-    //fprintf(stderr, "   have assembled a sdpDescription: \n%s\n", sdpDescription);
+    fprintf(stderr, "   have assembled a sdpDescription: \n%s\n", sdpDescription);
     
     
     
