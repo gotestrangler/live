@@ -36,7 +36,9 @@ ffmpeg                                                      \
 
 #cp out2.mpd /var/www/data/mpdtest.mpd
 
-cat init-stream0.m4s *.m4s > ekstraout.mp4
+cat /var/www/data/init-stream0.m4s /var/www/data/*.m4s > /var/www/data/ekstraout.mp4
+
+wget 172.27.128.151/ekstraout.mp4 --header "Host: denseserver.com"
 
 #./../testProgs/testH264VideoStreamer ekstratest.264
 
