@@ -265,6 +265,7 @@ void GenericMediaServer::ClientConnection::closeSockets() {
 }
 
 void GenericMediaServer::ClientConnection::incomingRequestHandler(void* instance, int /*mask*/) {
+  fprintf(stderr, "//////////// GenericMediaServer::ClientConnection::incomingRequestHandler() forste //////////////\n");
   ClientConnection* connection = (ClientConnection*)instance;
   connection->incomingRequestHandler();
 }
@@ -273,7 +274,10 @@ void GenericMediaServer::ClientConnection::incomingRequestHandler() {
   struct sockaddr_in dummy; // 'from' address, meaningless in this case
   //fprintf(stderr, "incomingRequestHandler() -> %d\n", ntohs(fOurSocket));
   int bytesRead = readSocket(envir(), fOurSocket, &fRequestBuffer[fRequestBytesAlreadySeen], fRequestBufferBytesLeft, dummy);
+  fprintf(stderr, "//////////// GenericMediaServer::ClientConnection::incomingRequestHandler() andre: %d //////////////\n", bytesRead);
   handleRequestBytes(bytesRead);
+
+  
 }
 
 void GenericMediaServer::ClientConnection::resetRequestBuffer() {

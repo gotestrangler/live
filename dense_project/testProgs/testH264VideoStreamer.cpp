@@ -33,7 +33,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <../liveMedia/include/RTSPDenseServer.hh>
 
 UsageEnvironment* env;
-char const* inputFileName = "test.264";
+char const* inputFileName = "ekstraout.mp4";
 H264VideoStreamFramer* videoSource;
 //RTPSink* videoSink;
 
@@ -142,6 +142,9 @@ int main(int argc, char** argv) {
   // Start the streaming:
   *env << "Beginning streaming...\n";
   //play();
+
+  
+  //rtspServer->handleRequestBytes();
 
 
   env->taskScheduler().doEventLoop();

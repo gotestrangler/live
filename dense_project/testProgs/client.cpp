@@ -502,15 +502,22 @@ DummySink::~DummySink() {
 
 void DummySink::afterGettingFrame(void* clientData, unsigned frameSize, unsigned numTruncatedBytes,
 				  struct timeval presentationTime, unsigned durationInMicroseconds) {
+  fprintf(stderr, "     DummySink::afterGettingFrame\n");
   DummySink* sink = (DummySink*)clientData;
   sink->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
 // If you don't want to see debugging output for each received frame, then comment out the following line:
-#define DEBUG_PRINT_EACH_RECEIVED_FRAME 1
+#define DEBUG_PRINT_EACH_RECEIVED_FRAME 0
 
 void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
       struct timeval presentationTime, unsigned /*durationInMicroseconds*/) {
+
+printf("\tTHIS IS AFTER GETTING FRAME\n");
+
+
+
+
 #if(0)
   // We've just received a frame of data.  (Optionally) print out information about it:
 #ifdef DEBUG_PRINT_EACH_RECEIVED_FRAME
@@ -532,6 +539,8 @@ void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes
   //printf("__FUNCTION__  = %s\n", __FUNCTION__ );
  if(0 == strncmp(fSubsession.codecName(), "H264", 16))
  { 
+
+  printf("\tthis is 264 indeed!\n");
   unsigned char nalu_header[4] = { 0, 0, 0, 1 };   
   unsigned char extraData[256]; 
   unsigned int num = 0;    
@@ -539,7 +548,7 @@ void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes
   SPropRecord *pSPropRecord;
   pSPropRecord = parseSPropParameterSets(fSubsession.fmtp_spropparametersets(), num); 
 
-  printf("\tHave parsed paramter sets for this frame of data. The number is: %d\n", num);
+  
   
   unsigned int extraLen;
   extraLen = 0;
@@ -547,7 +556,6 @@ void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes
   //pSPropRecord[0] is sps 
   //pSPropRecord[1] is pps
   for(unsigned int i = 0; i < num; i++){ 
-   printf("\tI is: %d\n", i);
    memcpy(&extraData[extraLen], &nalu_header[0], 4);
    extraLen += 4;
    memcpy(&extraData[extraLen], pSPropRecord[i].sPropBytes, pSPropRecord[i].sPropLength);
@@ -570,13 +578,25 @@ void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes
   fwrite(pH264, 1,  totalSize, fp);
   fflush(fp);
   printf("\tsaved %d bytes\n", totalSize);
- }/*if 0 == strncmp(fSubsession.codecName(), "H264", 16)*/
+
+  //exit(0);
+
+ }else{
+   printf("\thallo hallo hallo hallo hallo hallo hallo hallo hallo hallo hallo \n");
+ }
+ 
+ 
+ 
+ /*if 0 == strncmp(fSubsession.codecName(), "H264", 16)*/
 #endif  
   // Then continue, to request the next frame of data:
   continuePlaying();
 }
 
 Boolean DummySink::continuePlaying() {
+
+  printf("DummySink::continuePlaying() \n");
+
   if (fSource == NULL) return False; // sanity check (should not happen)
 
   // Request the next frame of data from our input source.  "afterGettingFrame()" will get called later, when it arrives:

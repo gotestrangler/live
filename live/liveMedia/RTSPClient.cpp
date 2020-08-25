@@ -1214,9 +1214,16 @@ Boolean RTSPClient::handleSETUPResponse(MediaSubsession& subsession, char const*
 Boolean RTSPClient::handlePLAYResponse(MediaSession* session, MediaSubsession* subsession,
                                        char const* scaleParamsStr, char const* speedParamsStr,
                                        char const* rangeParamsStr, char const* rtpInfoParamsStr) {
+
+fprintf(stderr, "RTSPClient::handlePLAYResponse - start!\n");
+
+
+                                         
   Boolean scaleOK = False, rangeOK = False, speedOK = False;
   do {
     if (session != NULL) {
+
+      fprintf(stderr, "RTSPClient::handlePLAYResponse - on the whole session\n");
       // The command was on the whole session
       if (scaleParamsStr != NULL && !parseScaleParam(scaleParamsStr, session->scale())) break;
       scaleOK = True;
@@ -1236,14 +1243,19 @@ Boolean RTSPClient::handlePLAYResponse(MediaSession* session, MediaSubsession* s
 	u_int16_t seqNum; u_int32_t timestamp;
 	subsession->rtpInfo.infoIsNew = False;
 	if (parseRTPInfoParams(rtpInfoParamsStr, seqNum, timestamp)) {
+    fprintf(stderr, "RTSPClient::handlePLAYResponse - parsed info good\n");
 	  subsession->rtpInfo.seqNum = seqNum;
 	  subsession->rtpInfo.timestamp = timestamp;
 	  subsession->rtpInfo.infoIsNew = True;
-	}
+	}else{
+    fprintf(stderr, "RTSPClient::handlePLAYResponse - parsed info not good\n");
+  }
 
 	if (subsession->rtpSource() != NULL) subsession->rtpSource()->enableRTCPReports() = True; // start sending RTCP "RR"s now
       }
     } else {
+
+      fprintf(stderr, "RTSPClient::handlePLAYResponse - on a subsession\n");
       // The command was on a subsession
       if (scaleParamsStr != NULL && !parseScaleParam(scaleParamsStr, subsession->scale())) break;
       scaleOK = True;
@@ -1260,9 +1272,12 @@ Boolean RTSPClient::handlePLAYResponse(MediaSession* session, MediaSubsession* s
       u_int16_t seqNum; u_int32_t timestamp;
       subsession->rtpInfo.infoIsNew = False;
       if (parseRTPInfoParams(rtpInfoParamsStr, seqNum, timestamp)) {
+        fprintf(stderr, "RTSPClient::handlePLAYResponse - parsed ok\n");
     subsession->rtpInfo.seqNum = seqNum;
     subsession->rtpInfo.timestamp = timestamp;
     subsession->rtpInfo.infoIsNew = True;
+      }else{
+        fprintf(stderr, "RTSPClient::handlePLAYResponse - parsed qwrong\n");
       }
 
       if (subsession->rtpSource() != NULL) subsession->rtpSource()->enableRTCPReports() = True; // start sending RTCP "RR"s now

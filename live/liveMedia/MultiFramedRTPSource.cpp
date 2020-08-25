@@ -227,6 +227,7 @@ void MultiFramedRTPSource::networkReadHandler(MultiFramedRTPSource* source, int 
 }
 
 void MultiFramedRTPSource::networkReadHandler1() {
+  
   BufferedPacket* bPacket = fPacketReadInProgress;
   if (bPacket == NULL) {
     // Normal case: Get a free BufferedPacket descriptor to hold the new network packet:
@@ -258,6 +259,7 @@ void MultiFramedRTPSource::networkReadHandler1() {
     if ((our_random()%10) == 0) break; // simulate 10% packet loss
 #endif
 
+    
     // Check for the 12-byte RTP header:
     if (bPacket->dataSize() < 12) break;
     unsigned rtpHdr = ntohl(*(u_int32_t*)(bPacket->data())); ADVANCE(4);
@@ -266,11 +268,16 @@ void MultiFramedRTPSource::networkReadHandler1() {
     unsigned rtpSSRC = ntohl(*(u_int32_t*)(bPacket->data())); ADVANCE(4);
 
     // Check the RTP version number (it should be 2):
-    if ((rtpHdr&0xC0000000) != 0x80000000) break;
+    fprintf(stderr, "Checking the RTP number\n");
+    if ((rtpHdr&0xC0000000) != 0x80000000){
+      fprintf(stderr, "OMG IT BREAKS MOTHER\n");
+      break;
+    } 
 
     // Check the Payload Type.
     unsigned char rtpPayloadType = (unsigned char)((rtpHdr&0x007F0000)>>16);
     if (rtpPayloadType != rtpPayloadFormat()) {
+      fprintf(stderr, "it is rtp format, correct!\n");
       if (fRTCPInstanceForMultiplexedRTCPPackets != NULL
 	  && rtpPayloadType >= 64 && rtpPayloadType <= 95) {
 	// This is a multiplexed RTCP packet, and we've been asked to deliver such packets.

@@ -599,6 +599,8 @@ void RTSPServer::RTSPClientConnection::handleAlternativeRequestByte(void* instan
 }
 
 void RTSPServer::RTSPClientConnection::handleAlternativeRequestByte1(u_int8_t requestByte) {
+
+  fprintf(stderr, "//////////// RTSPServer::RTSPClientConnection::handleAlternativeRequestByte1: %d //////////////\n", requestByte);
   if (requestByte == 0xFF) {
     // Hack: The new handler of the input TCP socket encountered an error reading it.  Indicate this:
     handleRequestBytes(-1);
@@ -617,27 +619,29 @@ void RTSPServer::RTSPClientConnection::handleAlternativeRequestByte1(u_int8_t re
 void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
   int numBytesRemaining = 0;
   ++fRecursionCount;
-  fprintf(stderr, "RTSPServer::RTSPClientConnection::handleRequestBytes\n");
+
+
+         fprintf(stderr, "handleRequestBytes -> lookupClientSession\n");
   do {
     RTSPServer::RTSPClientSession* clientSession = NULL;
 
     if (newBytesRead < 0 || (unsigned)newBytesRead >= fRequestBufferBytesLeft) {
       // Either the client socket has died, or the request was too big for us.
       // Terminate this connection:
-#ifdef DEBUG
+
       fprintf(stderr, "RTSPClientConnection[%p]::handleRequestBytes() read %d new bytes (of %d); terminating connection!\n", this, newBytesRead, fRequestBufferBytesLeft);
-#endif
+
       fIsActive = False;
       break;
     }
     
     Boolean endOfMsg = False;
     unsigned char* ptr = &fRequestBuffer[fRequestBytesAlreadySeen];
-#ifdef DEBUG
+
     ptr[newBytesRead] = '\0';
     fprintf(stderr, "RTSPClientConnection[%p]::handleRequestBytes() %s %d new bytes:%s\n",
 	    this, numBytesRemaining > 0 ? "processing" : "read", newBytesRead, ptr);
-#endif
+
     
     if (fClientOutputSocket != fClientInputSocket && numBytesRemaining == 0) {
       // We're doing RTSP-over-HTTP tunneling, and input commands are assumed to have been Base64-encoded.
@@ -695,6 +699,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	++tmpPtr;
       }
     }
+
     
     fRequestBufferBytesLeft -= newBytesRead;
     fRequestBytesAlreadySeen += newBytesRead;
@@ -755,16 +760,21 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 #endif
 	  handleCmd_sessionNotFound();
 	} else {
+    fprintf(stderr, "handleRequestBytes\n");
 	  // Normal case:
 	  handleCmd_OPTIONS();
 	}
       } else if (urlPreSuffix[0] == '\0' && urlSuffix[0] == '*' && urlSuffix[1] == '\0') {
+        fprintf(stderr, "handleRequestBytes\n");
 	// The special "*" URL means: an operation on the entire server.  This works only for GET_PARAMETER and SET_PARAMETER:
 	if (strcmp(cmdName, "GET_PARAMETER") == 0) {
+    fprintf(stderr, "handleRequestBytes\n");
 	  handleCmd_GET_PARAMETER((char const*)fRequestBuffer);
 	} else if (strcmp(cmdName, "SET_PARAMETER") == 0) {
+    fprintf(stderr, "handleRequestBytes\n");
 	  handleCmd_SET_PARAMETER((char const*)fRequestBuffer);
 	} else {
+    fprintf(stderr, "handleRequestBytes\n");
 	  handleCmd_notSupported();
 	}
       } else if (strcmp(cmdName, "DESCRIBE") == 0) {
@@ -773,6 +783,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	Boolean areAuthenticated = True;
 
 	if (!requestIncludedSessionId) {
+    fprintf(stderr, "handleRequestBytes\n");
 	  // No session id was present in the request.
 	  // So create a new "RTSPClientSession" object for this request.
 
@@ -984,6 +995,7 @@ static Boolean parseAuthorizationHeader(char const* buf,
 Boolean RTSPServer::RTSPClientConnection
 ::authenticationOK(char const* cmdName, char const* urlSuffix, char const* fullRequestStr) {
   if (!fOurRTSPServer.specialClientAccessCheck(fClientInputSocket, fClientAddr, urlSuffix)) {
+    fprintf(stderr, "authenticationOK\n");
     setRTSPResponse("401 Unauthorized");
     return False;
   }
@@ -1062,6 +1074,7 @@ Boolean RTSPServer::RTSPClientConnection
 
 void RTSPServer::RTSPClientConnection
 ::setRTSPResponse(char const* responseStr) {
+  fprintf(stderr, "RTSPServer::RTSPClientConnection::setRTSPResponse\n");
   snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
 	   "RTSP/1.0 %s\r\n"
 	   "CSeq: %s\r\n"
@@ -1073,6 +1086,7 @@ void RTSPServer::RTSPClientConnection
 
 void RTSPServer::RTSPClientConnection
 ::setRTSPResponse(char const* responseStr, u_int32_t sessionId) {
+  fprintf(stderr, "RTSPServer::RTSPClientConnection::setRTSPResponse\n");
   snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
 	   "RTSP/1.0 %s\r\n"
 	   "CSeq: %s\r\n"
@@ -1084,8 +1098,10 @@ void RTSPServer::RTSPClientConnection
 	   sessionId);
 }
 
+
 void RTSPServer::RTSPClientConnection
 ::setRTSPResponse(char const* responseStr, char const* contentStr) {
+  fprintf(stderr, "RTSPServer::RTSPClientConnection::setRTSPResponse\n");
   if (contentStr == NULL) contentStr = "";
   unsigned const contentLen = strlen(contentStr);
   
@@ -1104,6 +1120,7 @@ void RTSPServer::RTSPClientConnection
 
 void RTSPServer::RTSPClientConnection
 ::setRTSPResponse(char const* responseStr, u_int32_t sessionId, char const* contentStr) {
+  fprintf(stderr, "RTSPServer::RTSPClientConnection::setRTSPResponse\n");
   if (contentStr == NULL) contentStr = "";
   unsigned const contentLen = strlen(contentStr);
   
@@ -1124,6 +1141,7 @@ void RTSPServer::RTSPClientConnection
 
 void RTSPServer::RTSPClientConnection
 ::changeClientInputSocket(int newSocketNum, unsigned char const* extraData, unsigned extraDataSize) {
+  fprintf(stderr, "RTSPServer::RTSPClientConnection::changeClientInputSocket\n");
   envir().taskScheduler().disableBackgroundHandling(fClientInputSocket);
   fClientInputSocket = newSocketNum;
   envir().taskScheduler().setBackgroundHandling(fClientInputSocket, SOCKET_READABLE|SOCKET_EXCEPTION,
@@ -1582,6 +1600,8 @@ void RTSPServer::RTSPClientSession
 			  char const* cmdName,
 			  char const* urlPreSuffix, char const* urlSuffix,
 			  char const* fullRequestStr) {
+
+       fprintf(stderr, "   handleCmd_withinSession\n");   
   // This will either be:
   // - a non-aggregated operation, if "urlPreSuffix" is the session (stream)
   //   name and "urlSuffix" is the subsession (track) name, or
@@ -1628,6 +1648,7 @@ void RTSPServer::RTSPClientSession
   if (strcmp(cmdName, "TEARDOWN") == 0) {
     handleCmd_TEARDOWN(ourClientConnection, subsession);
   } else if (strcmp(cmdName, "PLAY") == 0) {
+    fprintf(stderr, "   handleCmd_withinSession sender den videre til handle play\n");
     handleCmd_PLAY(ourClientConnection, subsession, fullRequestStr);
   } else if (strcmp(cmdName, "PAUSE") == 0) {
     handleCmd_PAUSE(ourClientConnection, subsession);
@@ -1685,6 +1706,8 @@ void RTSPServer::RTSPClientSession
   } else {
     subsession->testScaleFactor(scale);
   }
+
+  fprintf(stderr, "############### HANDLE PLAY 1 ###############\n");
   
   char buf[100];
   char* scaleHeader;
@@ -1780,6 +1803,8 @@ void RTSPServer::RTSPClientSession
       }
     }
   }
+
+  fprintf(stderr, "############### HANDLE PLAY 2 ###############\n");
   
   // Create the "Range:" header that we'll send back in our response.
   // (Note that we do this after seeking, in case the seeking operation changed the range start time.)
@@ -1818,6 +1843,8 @@ void RTSPServer::RTSPClientSession
     }
   }
   char* rangeHeader = strDup(buf);
+
+  fprintf(stderr, "############### HANDLE PLAY 3 ###############\n");
   
   // Now, start streaming:
   for (i = 0; i < fNumStreamStates; ++i) {
@@ -1831,6 +1858,7 @@ void RTSPServer::RTSPClientSession
 					       (TaskFunc*)noteClientLiveness, this,
 					       rtpSeqNum, rtpTimestamp,
 					       RTSPServer::RTSPClientConnection::handleAlternativeRequestByte, ourClientConnection);
+fprintf(stderr, "############### HANDLE PLAY 4 ###############\n");
       const char *urlSuffix = fStreamStates[i].subsession->trackId();
       char* prevRTPInfo = rtpInfo;
       unsigned rtpInfoSize = rtpInfoFmtSize
@@ -1877,6 +1905,8 @@ void RTSPServer::RTSPClientSession
 	   rtpInfo);
   delete[] rtpInfo; delete[] rangeHeader;
   delete[] scaleHeader; delete[] rtspURL;
+
+  fprintf(stderr, "############### HANDLE PLAY 5 ###############\n");
 }
 
 void RTSPServer::RTSPClientSession

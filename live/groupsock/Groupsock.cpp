@@ -329,6 +329,8 @@ Boolean Groupsock::output(UsageEnvironment& env, unsigned char* buffer, unsigned
 Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 			      unsigned& bytesRead,
 			      struct sockaddr_in& fromAddressAndPort) {
+
+              fprintf(stderr, "Groupsock::handleRead - start\n");
   // Read data from the socket, and relay it across any attached tunnels
   //##### later make this code more general - independent of tunnels
 
@@ -338,6 +340,8 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 
   int maxBytesToRead = bufferMaxSize - TunnelEncapsulationTrailerMaxSize;
   int numBytes = readSocket(env(), socketNum(), buffer, maxBytesToRead, fromAddressAndPort);
+
+  fprintf(stderr, "Groupsock::handleRead - readSocket after numbytes: %d\n", numBytes);
 
   if (numBytes < 0) {
     if (DebugLevel >= 0) { // this is a fatal error
@@ -375,7 +379,7 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
       statsGroupRelayedIncoming.countPacket(numBytes);
     }
   }
-  if (0) {
+  if (1) {
     env() << *this << ": read " << bytesRead << " bytes from " << AddressString(fromAddressAndPort).val() << ", port " << ntohs(fromAddressAndPort.sin_port);
     if (numMembers > 0) {
       env() << "; relayed to " << numMembers << " members";

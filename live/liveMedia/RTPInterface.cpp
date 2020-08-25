@@ -268,12 +268,13 @@ Boolean RTPInterface::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 				 int& tcpSocketNum, unsigned char& tcpStreamChannelId,
 				 Boolean& packetReadWasIncomplete) {
 
-  //fprintf(stderr, "\n     RTPInterface::handleRead with PORT: %hu\n", (fGS->port().num()));
+  fprintf(stderr, "\n     RTPInterface::handleRead with PORT: %hu\n", (fGS->port().num()));
       
   packetReadWasIncomplete = False; // by default
   Boolean readSuccess;
   if (fNextTCPReadStreamSocketNum < 0) {
     // Normal case: read from the (datagram) 'groupsock':
+    fprintf(stderr, "\n     Handle read RTPINTERFACE mama this is UDP\n");
     tcpSocketNum = -1;
     readSuccess = fGS->handleRead(buffer, bufferMaxSize, bytesRead, fromAddress);
   } else {
@@ -367,6 +368,7 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
 #endif
 
 Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsigned dataSize, Boolean forceSendToSucceed) {
+  fprintf(stderr, "RTPInterface::sendDataOverTCP\n");
   int sendResult = send(socketNum, (char const*)data, dataSize, 0/*flags*/);
   if (sendResult < (int)dataSize) {
     // The TCP send() failed - at least partially.

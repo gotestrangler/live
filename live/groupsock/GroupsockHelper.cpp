@@ -421,10 +421,14 @@ Boolean writeSocket(UsageEnvironment& env,
 Boolean writeSocket(UsageEnvironment& env,
 		    int socket, struct in_addr address, portNumBits portNum,
 		    unsigned char* buffer, unsigned bufferSize) {
+
+          fprintf(stderr, "writeSocket: %d\n", bufferSize);
   do {
     MAKE_SOCKADDR_IN(dest, address.s_addr, portNum);
     int bytesSent = sendto(socket, (char*)buffer, bufferSize, 0,
 			   (struct sockaddr*)&dest, sizeof dest);
+
+    fprintf(stderr, "writeSocket: %d\n", bytesSent);
     if (bytesSent != (int)bufferSize) {
       char tmpBuf[100];
       sprintf(tmpBuf, "writeSocket(%d), sendTo() error: wrote %d bytes instead of %u: ", socket, bytesSent, bufferSize);

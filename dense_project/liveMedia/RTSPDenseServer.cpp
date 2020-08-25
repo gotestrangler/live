@@ -292,9 +292,12 @@ static Boolean parsePlayNowHeader(char const* buf) {
 
 
 void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytesRead) {
+
+  fprintf(stderr, "RTSPDenseClientConnection::handleRequestBytes\n");
+  
   int numBytesRemaining = 0;
   ++fRecursionCount;
-  //fprintf(stderr, "//////////// handleRequestBytes//////////////\n");
+
     do {
     RTSPDenseServer::RTSPDenseClientSession* clientSession = NULL;
 
@@ -304,7 +307,6 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
       fIsActive = False;
       break;
     }
-    //fprintf(stderr, "1\n");
     Boolean endOfMsg = False;
     unsigned char* ptr = &fRequestBuffer[fRequestBytesAlreadySeen];
 
@@ -365,7 +367,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
 	++tmpPtr;
       }
     }
-    //fprintf(stderr, "2\n");
+
     fRequestBufferBytesLeft -= newBytesRead;
     fRequestBytesAlreadySeen += newBytesRead;
     
@@ -382,7 +384,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
     Boolean playAfterSetup = False;
     fLastCRLF[2] = '\0'; // temporarily, for parsing
 
-    //fprintf(stderr, "handleRequestBytes -> parseRTSPRequestString FØR\n");
+
 
     Boolean parseSucceeded = parseRTSPRequestString((char*)fRequestBuffer, fLastCRLF+2 - fRequestBuffer,
 						    cmdName, sizeof cmdName,
@@ -405,13 +407,12 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
       parseSucceeded = False;
     }
     if (parseSucceeded) {
-      //fprintf(stderr, "parsesuceeded\n");
+     
 #ifdef DEBUG
       fprintf(stderr, "parseRTSPRequestString() succeeded, returning cmdName \"%s\", urlPreSuffix \"%s\", urlSuffix \"%s\", CSeq \"%s\", Content-Length %u, with %d bytes following the message.\n", cmdName, urlPreSuffix, urlSuffix, cseq, contentLength, ptr + newBytesRead - (tmpPtr + 2));
 #endif
       // If there was a "Content-Length:" header, then make sure we've received all of the data that it specified:
       if (ptr + newBytesRead < tmpPtr + 2 + contentLength){
-        //fprintf(stderr, "break\n");
         break; // we still need more data; subsequent reads will give it to us 
       } 
       
@@ -425,7 +426,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
 	clientSession
 	  = (RTSPDenseServer::RTSPDenseClientSession*)(fOurRTSPServer.lookupClientSession(sessionIdStr));
 	if (clientSession != NULL){
-    //fprintf(stderr, "handleRequestBytes -> noteliveness on clientsession\n");
+    
     clientSession->noteLiveness();
   } 
       }else{
@@ -435,6 +436,9 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
       //fprintf(stderr, "handleRequestBytes -> We now have a complete RTSP request\n");
       // We now have a complete RTSP request.
       // Handle the specified command (beginning with commands that are session-independent):
+
+      
+
       fCurrentCSeq = cseq;
       if (strcmp(cmdName, "OPTIONS") == 0) {
         fprintf(stderr, "OPTIONS\n");
@@ -454,20 +458,20 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
       } else if (urlPreSuffix[0] == '\0' && urlSuffix[0] == '*' && urlSuffix[1] == '\0') {
 	// The special "*" URL means: an operation on the entire server.  This works only for GET_PARAMETER and SET_PARAMETER:
 	if (strcmp(cmdName, "GET_PARAMETER") == 0) {
-    //fprintf(stderr, "GET_PARAMETER\n");
+    fprintf(stderr, "GET_PARAMETER\n");
 	  handleCmd_GET_PARAMETER((char const*)fRequestBuffer);
 	} else if (strcmp(cmdName, "SET_PARAMETER") == 0) {
-    //fprintf(stderr, "SET_PARAMETER\n");
+    fprintf(stderr, "SET_PARAMETER\n");
 	  handleCmd_SET_PARAMETER((char const*)fRequestBuffer);
 	} else {
 	  handleCmd_notSupported();
 	}
       } else if (strcmp(cmdName, "DESCRIBE") == 0) {
-        //fprintf(stderr, "DESCRIBE\n");
+        fprintf(stderr, "DESCRIBE\n");
 	handleCmd_DESCRIBE(urlPreSuffix, urlSuffix, (char const*)fRequestBuffer);
       } else if (strcmp(cmdName, "SETUP") == 0) {
 	Boolean areAuthenticated = True;
-      //fprintf(stderr, "cmnd name is setup\n");
+      fprintf(stderr, "cmnd name is setup\n");
 
 	if (!requestIncludedSessionId) {
     //fprintf(stderr, "the request did not include session id\n");
@@ -485,12 +489,12 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
 	  }
 	  strcat(urlTotalSuffix, urlSuffix);
 	  if (authenticationOK("SETUP", urlTotalSuffix, (char const*)fRequestBuffer)) {
-      //fprintf(stderr, "createnewClientsesion\n");
+      fprintf(stderr, "createnewClientsesion\n");
 	    clientSession
 	      = (RTSPDenseServer::RTSPDenseClientSession*)fOurRTSPServer.createNewClientSessionWithId();
 	  } else {
 	    areAuthenticated = False;
-      //fprintf(stderr, "not autentichated\n");
+      fprintf(stderr, "not autentichated\n");
 	  }
 	}
 	if (clientSession != NULL) {
@@ -508,7 +512,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
 		 || strcmp(cmdName, "GET_PARAMETER") == 0
 		 || strcmp(cmdName, "SET_PARAMETER") == 0) {
 	if (clientSession != NULL) {
-    //fprintf(stderr, "handleCMD within session\n");
+    fprintf(stderr, "handleCMD within session\n");
 	  clientSession->handleCmd_withinSession(this, cmdName, urlPreSuffix, urlSuffix, (char const*)fRequestBuffer);
 	} else {
 #ifdef DEBUG
@@ -592,9 +596,8 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
       }
     }
     
-#ifdef DEBUG
+
     fprintf(stderr, "sending response: %s", fResponseBuffer);
-#endif
     send(fClientOutputSocket, (char const*)fResponseBuffer, strlen((char*)fResponseBuffer), 0);
     
     if (playAfterSetup) {
@@ -622,6 +625,8 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
     // while handling a command (e.g., while handling a "DESCRIBE", to get a SDP description).
     // In such a case we don't want to actually delete ourself until we leave the outermost call.
   }
+
+  fprintf(stderr, "RTSPDenseClientConnection::handleRequestBytes - end\n");
 }
 
 
@@ -730,6 +735,8 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
 
         fprintf(stderr, "/////////////// FERDIG MAKE /////////////\n");
 
+        //handleCmd_DESCRIBE('teststream'); 
+
 }
 
 
@@ -740,13 +747,13 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
 
 void RTSPDenseServer::RTSPDenseClientConnection
 ::handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr) {
-  fprintf(stderr, "/////////////// YOUR DESCRIBE /////////////\n");
+  fprintf(stderr, "/////////////// YOUR DESCRIBE brodda /////////////\n");
   
   ServerMediaSession* session = NULL;
   char* sdpDescription = NULL;
   char* rtspURL = NULL;
   do {
-    fprintf(stderr, "/////////////// YOUR DESCRIBE /////////////\n");
+    fprintf(stderr, "/////////////// YOUR DESCRIBE fireboy /////////////\n");
     char urlTotalSuffix[2*RTSP_PARAM_STRING_MAX];
         // enough space for urlPreSuffix/urlSuffix'\0'
     urlTotalSuffix[0] = '\0';
@@ -874,7 +881,7 @@ void RTSPDenseServer::RTSPDenseClientConnection
 
 void RTSPDenseServer::RTSPDenseClientConnection::handleCmd_OPTIONS(char* urlSuffix) {
 
-  //fprintf(stderr, "/////////////// YOUR OPTIONS /////////////\n");
+  fprintf(stderr, "/////////////// YOUR OPTIONS /////////////\n");
 
     ServerMediaSession * session = fOurServer.lookupServerMediaSession(urlSuffix);
     /*

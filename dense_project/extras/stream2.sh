@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-INPUT='ekstratest.264'
+INPUT='flipped.mkv'
 
 ffmpeg                                                      \
     -fflags                   nobuffer                                         \
@@ -11,35 +11,35 @@ ffmpeg                                                      \
                                                                                \
     -map                      v:0                                              \
                                                                                \
-    -s                        1080x1080                                        \
+    -s                        720x720                                        \
     -c                        libx264                                       \
-      -preset                 fast                                               \
-      -flags                  +cgop                                            \
-      -g                      30                                               \
+    -preset                   fast                                               \
                                                                                \
     -b:v:0                    1000k                                            \
     -maxrate:v:0              1200k                                            \
     -bufsize:v:0              1000k                                            \
                                                                                \
     -seg_duration             2                                                \
-    -window_size              5                                                \
-    -extra_window_size        5                                                \
     -use_template             1                                                \
-    -use_timeline             0                                                \
+    -use_timeline             1                                                \
     -hls_playlist             1                                                \
-    -streaming                1                                                \
+    -streaming                0                                                \
     -index_correction         1                                                \
     -dash_segment_type        mp4                                              \
     -remove_at_exit           0                                                \
                                                                                \
-    /var/www/data/mpdtest.mpd
+    chunks/flip.mpd
+    #/var/www/data/flip.mpd
 
 #cp out2.mpd /var/www/data/mpdtest.mpd
 
-cat /var/www/data/init-stream0.m4s /var/www/data/*.m4s > /var/www/data/ekstraout.mp4
+#cat /var/www/data/init-stream0.m4s /var/www/data/*.m4s > /var/www/data/flip.mp4
+#cat chunks/init-stream0.m4s chunks/*.m4s > flip.mp4
 
-wget 172.27.128.151/ekstraout.mp4 --header "Host: denseserver.com"
+#wget 172.23.190.178/flip.mp4 --header "Host: denseserver.com"
 
 #./../testProgs/testH264VideoStreamer ekstratest.264
 
+    #-window_size              5                                                \
+    #-extra_window_size        5                                                \
 
