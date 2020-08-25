@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-INPUT='flipped.mkv'
+INPUT='../testProgs/test.264'
 
 ffmpeg                                                      \
     -fflags                   nobuffer                                         \
