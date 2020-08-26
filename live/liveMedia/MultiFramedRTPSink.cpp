@@ -172,7 +172,7 @@ void MultiFramedRTPSink::stopPlaying() {
 
 void MultiFramedRTPSink::buildAndSendPacket(Boolean isFirstPacket) {
 
-  fprintf(stderr, "MultiFramedRTPSink buildandsendpacket %d\n", fSeqNo);
+  //fprintf(stderr, "MultiFramedRTPSink buildandsendpacket %d\n", fSeqNo);
   nextTask() = NULL;
   fIsFirstPacket = isFirstPacket;
 
@@ -243,7 +243,7 @@ void MultiFramedRTPSink
 		     struct timeval presentationTime,
 		     unsigned durationInMicroseconds) {
   
-  fprintf(stderr, "MultiFramedRTPSink::afterGettingFrame1\n");
+  //fprintf(stderr, "MultiFramedRTPSink::afterGettingFrame1\n");
 
   if (fIsFirstPacket) {
     // Record the fact that we're starting to play now:
@@ -369,7 +369,7 @@ Boolean MultiFramedRTPSink::isTooBigForAPacket(unsigned numBytes) const {
 }
 
 void MultiFramedRTPSink::sendPacketIfNecessary() {
-  fprintf(stderr, "\n     sendPacketIfNecessary()\n");
+  //fprintf(stderr, "\n     sendPacketIfNecessary()\n");
   if (fNumFramesUsedSoFar > 0) {
     // Send the packet:
 #ifdef TEST_LOSS
@@ -425,7 +425,7 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
 
 // The following is called after each delay between packet sends:
 void MultiFramedRTPSink::sendNext(void* firstArg) {
-  fprintf(stderr, "\n     MultiFramedRTPSink::sendNext\n");
+  //fprintf(stderr, "\n     MultiFramedRTPSink::sendNext\n");
   MultiFramedRTPSink* sink = (MultiFramedRTPSink*)firstArg;
   sink->buildAndSendPacket(False);
 }
