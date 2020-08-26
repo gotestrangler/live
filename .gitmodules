@@ -1,0 +1,3 @@
+[submodule "dense_project/mp4analyser"]
+	path = dense_project/mp4analyser
+	url = https://github.com/essential61/mp4analyser
