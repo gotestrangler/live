@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-INPUT='../testProgs/test.264'
+INPUT='demux.h264'
 
 ffmpeg                                                      \
     -fflags                   nobuffer                                         \
