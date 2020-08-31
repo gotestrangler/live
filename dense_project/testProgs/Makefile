@@ -5,6 +5,7 @@ LIBS = $(LIVE_DIR)liveMedia/libliveMedia.a $(LIVE_DIR)groupsock/libgroupsock.a $
 TEST_H264_VIDEO_STREAMER = testH264VideoStreamer
 TEST_H264_VIDEO_STREAMER_ORIG = testH264VideoStreamerOrig
 TEST_MP4_VIDEO_STREAMER = testMP4VideoStreamer
+TRANSPORT_STREAMER = transportStreamer
 CLIENT = client
 CLIENT2 = client2
 SERVER = ../liveMedia/RTSPDenseServer
@@ -12,6 +13,9 @@ SERVER = ../liveMedia/RTSPDenseServer
 all:
 	c++ -c -g $(INCLUDES)  -DBSD=1 -O -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -DTIME_BASE=int -Wall ./$(TEST_H264_VIDEO_STREAMER).cpp
 	c++ -g -o $(TEST_H264_VIDEO_STREAMER) -L. $(SERVER).o $(TEST_H264_VIDEO_STREAMER).o $(LIBS)
+
+	c++ -c -g $(INCLUDES)  -DBSD=1 -O -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -DTIME_BASE=int -Wall ./$(TRANSPORT_STREAMER).cpp
+	c++ -g -o $(TRANSPORT_STREAMER) -L. $(SERVER).o $(TRANSPORT_STREAMER).o $(LIBS)
 
 	c++ -c -g $(INCLUDES)  -DBSD=1 -O -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -DTIME_BASE=int -Wall ./$(TEST_MP4_VIDEO_STREAMER).cpp
 	c++ -g -o $(TEST_MP4_VIDEO_STREAMER) -L. $(SERVER).o $(TEST_MP4_VIDEO_STREAMER).o $(LIBS)
@@ -29,6 +33,7 @@ clean:
 	rm -f $(TEST_H264_VIDEO_STREAMER)
 	rm -f $(TEST_H264_VIDEO_STREAMER_ORIG)
 	rm -f $(TEST_MP4_VIDEO_STREAMER)
+	rm -f $(TRANSPORT_STREAMER)
 	rm -f client
 	rm -f client2
 	rm -f *.o
