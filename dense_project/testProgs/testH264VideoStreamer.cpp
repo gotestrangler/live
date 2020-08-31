@@ -33,7 +33,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <../liveMedia/include/RTSPDenseServer.hh>
 
 UsageEnvironment* env;
-char const* inputFileName = "ekstraout.mp4";
+
 H264VideoStreamFramer* videoSource;
 //RTPSink* videoSink;
 
@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
   
   
   ServerMediaSession* sms
-    = ServerMediaSession::createNew(*env, "teststream", inputFileName,
+    = ServerMediaSession::createNew(*env, "teststream", (char const*)rtspServer->filenames->Lookup((const char *)1),
 		   "Session streamed by \"testH264VideoStreamer\"",
 					   True /*SSM*/);
 
