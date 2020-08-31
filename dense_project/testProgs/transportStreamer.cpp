@@ -31,7 +31,7 @@ Boolean const isSSM = False;
 #endif
 
 // To set up an internal RTSP server, uncomment the following:
-//#define IMPLEMENT_RTSP_SERVER 1
+#define IMPLEMENT_RTSP_SERVER 1
 // (Note that this RTSP server works for multicast only)
 
 #define TRANSPORT_PACKET_SIZE 188
@@ -39,7 +39,7 @@ Boolean const isSSM = False;
 // The product of these two numbers must be enough to fit within a network packet
 
 UsageEnvironment* env;
-char const* inputFileName = "test.ts";
+char const* inputFileName = "../extras/chunks/mix.ts";
 FramedSource* videoSource;
 RTPSink* videoSink;
 
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
   // Note: This starts RTCP running automatically
 
 
-  RTSPServer* rtspServer = RTSPServer::createNew(*env);
+  RTSPServer* rtspServer = RTSPServer::createNew(*env, 8554);
   // Note that this (attempts to) start a server on the default RTSP server
   // port: 554.  To use a different port number, add it as an extra
   // (optional) parameter to the "RTSPServer::createNew()" call above.
@@ -132,7 +132,7 @@ void afterPlaying(void* /*clientData*/) {
   Medium::close(videoSource);
   // Note that this also closes the input file that this source read from.
 
-  play();
+  //play();
 }
 
 void play() {

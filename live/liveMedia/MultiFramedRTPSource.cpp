@@ -268,7 +268,7 @@ void MultiFramedRTPSource::networkReadHandler1() {
     unsigned rtpSSRC = ntohl(*(u_int32_t*)(bPacket->data())); ADVANCE(4);
 
     // Check the RTP version number (it should be 2):
-    fprintf(stderr, "Checking the RTP number\n");
+    //fprintf(stderr, "Checking the RTP number\n");
     if ((rtpHdr&0xC0000000) != 0x80000000){
       fprintf(stderr, "OMG IT BREAKS MOTHER\n");
       break;
@@ -277,7 +277,7 @@ void MultiFramedRTPSource::networkReadHandler1() {
     // Check the Payload Type.
     unsigned char rtpPayloadType = (unsigned char)((rtpHdr&0x007F0000)>>16);
     if (rtpPayloadType != rtpPayloadFormat()) {
-      fprintf(stderr, "it is rtp format, correct!\n");
+      //fprintf(stderr, "it is rtp format, correct!\n");
       if (fRTCPInstanceForMultiplexedRTCPPackets != NULL
 	  && rtpPayloadType >= 64 && rtpPayloadType <= 95) {
 	// This is a multiplexed RTCP packet, and we've been asked to deliver such packets.

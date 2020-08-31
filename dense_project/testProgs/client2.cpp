@@ -43,8 +43,9 @@ int main(int argc, char** argv) {
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
   env = BasicUsageEnvironment::createNew(*scheduler);
 
+  char const* recievedTS = "recieved.ts"; 
   // Create the data sink for 'stdout':
-  sessionState.sink = FileSink::createNew(*env, "stdout");
+  sessionState.sink = FileSink::createNew(*env, recievedTS);
   // Note: The string "stdout" is handled as a special case.
   // A real file name could have been used instead.
 
