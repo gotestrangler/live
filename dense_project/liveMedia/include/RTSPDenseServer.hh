@@ -81,7 +81,7 @@ class RTSPDenseServer: public RTSPServer {
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         ByteStreamFileSource* fileSource,
-        MPEG4VideoStreamFramer* videoSource){
+        H264VideoStreamFramer* videoSource){
 
         }
     
@@ -110,14 +110,14 @@ class RTSPDenseServer: public RTSPServer {
 
         //File streamer and framer
         ByteStreamFileSource* fileSource;
-        MPEG4VideoStreamFramer* videoSource;
+        H264VideoStreamFramer* videoSource;
     };
 
     DenseSession* createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSink* videoSink, RTCPInstance* rtcp, 
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         ByteStreamFileSource* fileSource,
-        MPEG4VideoStreamFramer* videoSource);
+        H264VideoStreamFramer* videoSource);
 
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-INPUT='demux.h264'
+INPUT='bunny.mp4'
 
 ffmpeg                                                      \
     -fflags                   nobuffer                                         \

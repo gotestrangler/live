@@ -14,7 +14,7 @@
 #include "Groupsock.hh"
 
 
-MPEG4VideoStreamFramer* videoSource1;
+H264VideoStreamFramer* videoSource1;
 RTPSink* videoSink1;
 
 
@@ -90,7 +90,7 @@ RTSPDenseServer::createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSin
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         ByteStreamFileSource* fileSource,
-        MPEG4VideoStreamFramer* videoSource) {
+        H264VideoStreamFramer* videoSource) {
 
   //fprintf(stderr, "creTING NEW DENSE SESSION:\n" );
   return new DenseSession(rtpG, rtcpG, videoSink, rtcp, 
@@ -684,7 +684,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
         OutPacketBuffer::maxSize = 100000;
         //RTPSink* videoSink;
-        firstsesh->videoSink = MPEG4ESVideoRTPSink::createNew(env, firstsesh->rtpGroupsock, 96);
+        firstsesh->videoSink = H264VideoRTPSink::createNew(env, firstsesh->rtpGroupsock, 96);
         videoSink1 = firstsesh->videoSink;
         //fprintf(stderr, "       Made Sink - CHECK INFO!! \n");
 
@@ -725,7 +725,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         FramedSource* videoES = firstsesh->fileSource;
 
 
-        firstsesh->videoSource = MPEG4VideoStreamFramer::createNew(envir(), videoES);
+        firstsesh->videoSource = H264VideoStreamFramer::createNew(envir(), videoES);
         
         videoSource1 = firstsesh->videoSource; 
  
