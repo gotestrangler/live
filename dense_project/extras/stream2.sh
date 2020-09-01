@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-INPUT='bunny.mp4'
+INPUT='long.mp4'
 
 ffmpeg                                                      \
     -fflags                   nobuffer                                         \
@@ -9,10 +9,11 @@ ffmpeg                                                      \
                                                                                \
     -max_muxing_queue_size    1024                                             \
                                                                                \
-    -map                      v:0                                              \
+    -map                      v:0         -map                      0:a\?:0 \
+    -c:a libfdk_aac -b:a 128k \
                                                                                \
     -s                        720x720                                        \
-    -c                        libx264                                       \
+    -c:v                        libx264                                       \
     -preset                   fast                                               \
                                                                                \
     -b:v:0                    1000k                                            \
