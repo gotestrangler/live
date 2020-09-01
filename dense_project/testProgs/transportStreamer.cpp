@@ -21,6 +21,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
 #include "GroupsockHelper.hh"
+#include <../liveMedia/include/RTSPDenseServer.hh>
 
 // To stream using "source-specific multicast" (SSM), uncomment the following:
 //#define USE_SSM 1
@@ -96,7 +97,7 @@ int main(int argc, char** argv) {
   // Note: This starts RTCP running automatically
 
 
-  RTSPServer* rtspServer = RTSPServer::createNew(*env, 8554);
+  RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554);
   // Note that this (attempts to) start a server on the default RTSP server
   // port: 554.  To use a different port number, add it as an extra
   // (optional) parameter to the "RTSPServer::createNew()" call above.
