@@ -11,9 +11,12 @@
 #include "ByteStreamFileSource.hh"
 #include "H264VideoStreamFramer.hh"
 #include "MPEG4VideoStreamFramer.hh"
+#include "MPEG2TransportStreamFramer.hh"
+#include "SimpleRTPSink.hh"
 
 
-
+#define TRANSPORT_PACKET_SIZE 188
+#define TRANSPORT_PACKETS_PER_NETWORK_PACKET 7
 
 
 ///// DENSE SERVER //////
@@ -77,11 +80,11 @@ class RTSPDenseServer: public RTSPServer {
     public: 
     class DenseSession{
         public: 
-        DenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSink* videoSink, RTCPInstance* rtcp, 
+        DenseSession(Groupsock* rtpG, Groupsock* rtcpG, SimpleRTPSink* videoSink, RTCPInstance* rtcp, 
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         ByteStreamFileSource* fileSource,
-        H264VideoStreamFramer* videoSource){
+        MPEG2TransportStreamFramer* videoSource){
 
         }
     
@@ -97,7 +100,7 @@ class RTSPDenseServer: public RTSPServer {
         Groupsock * rtcpGroupsock;
 
         //RTP 
-        RTPSink* videoSink;
+        SimpleRTPSink* videoSink;
 
         //RTCP
         RTCPInstance* rtcp;
@@ -110,14 +113,14 @@ class RTSPDenseServer: public RTSPServer {
 
         //File streamer and framer
         ByteStreamFileSource* fileSource;
-        H264VideoStreamFramer* videoSource;
+        MPEG2TransportStreamFramer* videoSource;
     };
 
-    DenseSession* createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSink* videoSink, RTCPInstance* rtcp, 
+    DenseSession* createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, SimpleRTPSink* videoSink, RTCPInstance* rtcp, 
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         ByteStreamFileSource* fileSource,
-        H264VideoStreamFramer* videoSource);
+        MPEG2TransportStreamFramer* videoSource);
 
 
 

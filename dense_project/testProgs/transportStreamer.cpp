@@ -51,6 +51,8 @@ int main(int argc, char** argv) {
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
   env = BasicUsageEnvironment::createNew(*scheduler);
 
+
+/*
   // Create 'groupsocks' for RTP and RTCP:
   char const* destinationAddressStr
 #ifdef USE_SSM
@@ -78,10 +80,12 @@ int main(int argc, char** argv) {
   rtcpGroupsock.multicastSendOnly();
 #endif
 
+*/
+
   // Create an appropriate 'RTP sink' from the RTP 'groupsock':
-  videoSink =
-    SimpleRTPSink::createNew(*env, &rtpGroupsock, 33, 90000, "video", "MP2T",
-			     1, True, False /*no 'M' bit*/);
+  //videoSink = SimpleRTPSink::createNew(*env, &rtpGroupsock, 33, 90000, "video", "MP2T", 1, True, False /*no 'M' bit*/);
+
+  /*
 
   // Create (and start) a 'RTCP instance' for this RTP sink:
   const unsigned estimatedSessionBandwidth = 5000; // in kbps; for RTCP b/w share
@@ -93,9 +97,10 @@ int main(int argc, char** argv) {
   RTCPInstance* rtcp =
     RTCPInstance::createNew(*env, &rtcpGroupsock,
 			    estimatedSessionBandwidth, CNAME,
-			    videoSink, NULL /* we're a server */, isSSM);
+			    videoSink, NULL, isSSM);
   // Note: This starts RTCP running automatically
 
+*/
 
   RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554);
   // Note that this (attempts to) start a server on the default RTSP server
@@ -105,12 +110,21 @@ int main(int argc, char** argv) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);
   }
+
+
+ for(int i = 0; i < (argc - 1); i++){
+   *env << "Adding filename: " << argv[i + 1] << " to the denseServer\n";
+   rtspServer->filenames->Add((const char *)i, argv[i + 1]);
+ }
+
+
+
+
   ServerMediaSession* sms
-    = ServerMediaSession::createNew(*env, "testStream", inputFileName,
-		   "Session streamed by \"testMPEG2TransportStreamer\"",
-					   isSSM);
-  sms->addSubsession(PassiveServerMediaSubsession::createNew(*videoSink, rtcp));
+    = ServerMediaSession::createNew(*env, "testStream", (char const*)rtspServer->filenames->Lookup((const char *)1),
+		   "Session streamed by \"testMPEG2TransportStreamer\"", isSSM);
   rtspServer->addServerMediaSession(sms);
+  
 
   char* url = rtspServer->rtspURL(sms);
   *env << "Play this stream using the URL \"" << url << "\"\n";
@@ -119,7 +133,7 @@ int main(int argc, char** argv) {
 
   // Finally, start the streaming:
   *env << "Beginning streaming...\n";
-  play();
+  //play();
 
   env->taskScheduler().doEventLoop(); // does not return
 

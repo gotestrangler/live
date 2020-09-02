@@ -34,7 +34,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 UsageEnvironment* env;
 
-H264VideoStreamFramer* videoSource;
+//H264VideoStreamFramer* videoSource;
 //RTPSink* videoSink;
 
 void play(); // forward

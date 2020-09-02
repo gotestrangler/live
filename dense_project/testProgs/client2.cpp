@@ -50,15 +50,11 @@ int main(int argc, char** argv) {
   // A real file name could have been used instead.
 
   // Create 'groupsocks' for RTP and RTCP:
-  char const* sessionAddressStr
-#ifdef USE_SSM
-    = "232.255.42.42";
-#else
-    = "239.255.42.42";
+  char const* sessionAddressStr = "239.255.42.42";
   // Note: If the session is unicast rather than multicast,
   // then replace this string with "0.0.0.0"
-#endif
-  const unsigned short rtpPortNum = 1234;
+  
+  const unsigned short rtpPortNum = 18888;
   const unsigned short rtcpPortNum = rtpPortNum+1;
 #ifndef USE_SSM
   const unsigned char ttl = 1; // low, in case routers don't admin scope
@@ -85,7 +81,7 @@ int main(int argc, char** argv) {
 #endif
 
   // Create the data source: a "MPEG-2 TransportStream RTP source" (which uses a 'simple' RTP payload format):
-  sessionState.source = SimpleRTPSource::createNew(*env, &rtpGroupsock, 33, 90000, "video/MP2T", 0, False /*no 'M' bit*/);
+  sessionState.source = SimpleRTPSource::createNew(*env, &rtpGroupsock, 96, 90000, "video/MP2T", 0, False /*no 'M' bit*/);
 
   // Create (and start) a 'RTCP instance' for the RTP source:
   const unsigned estimatedSessionBandwidth = 5000; // in kbps; for RTCP b/w share

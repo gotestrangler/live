@@ -285,7 +285,11 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
     // (This will prepare the data sink to receive data; the actual flow of data from the client won't start happening until later,
     // after we've sent a RTSP "PLAY" command.)
 
-    scs.subsession->sink = DummySink::createNew(env, *scs.subsession, rtspClient->url());
+      char const* recievedTS = "DAREYOUTOMOVE.ts"; 
+      // Create the data sink for 'stdout':
+      scs.subsession->sink = FileSink::createNew(rtspClient->envir(), recievedTS);
+
+    //scs.subsession->sink = DummySink::createNew(env, *scs.subsession, rtspClient->url());
       // perhaps use your own custom "MediaSink" subclass instead
     if (scs.subsession->sink == NULL) {
       env << *rtspClient << "Failed to create a data sink for the \"" << *scs.subsession
@@ -471,137 +475,3 @@ StreamClientState::~StreamClientState() {
   }
 }
 
-
-// Implementation of "DummySink":
-
-// Even though we're not going to be doing anything with the incoming data, we still need to receive it.
-// Define the size of the buffer that we'll use:
-#define DUMMY_SINK_RECEIVE_BUFFER_SIZE 100000
-
-DummySink* DummySink::createNew(UsageEnvironment& env, MediaSubsession& subsession, char const* streamId) {
-  return new DummySink(env, subsession, streamId);
-}
-
-
-unsigned char *pH264 = NULL;
-
-DummySink::DummySink(UsageEnvironment& env, MediaSubsession& subsession, char const* streamId)
-  : MediaSink(env),
-    fSubsession(subsession) {
-  fStreamId = strDup(streamId);
-  fReceiveBuffer = new u_int8_t[DUMMY_SINK_RECEIVE_BUFFER_SIZE];
-  pH264 = (unsigned char*)malloc(256*1024);
-}
-
-DummySink::~DummySink() {
-  delete[] fReceiveBuffer;
-  delete[] fStreamId;
-  if(NULL != pH264)
-   free(pH264);
-}
-
-void DummySink::afterGettingFrame(void* clientData, unsigned frameSize, unsigned numTruncatedBytes,
-				  struct timeval presentationTime, unsigned durationInMicroseconds) {
-  fprintf(stderr, "     DummySink::afterGettingFrame\n");
-  DummySink* sink = (DummySink*)clientData;
-  sink->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
-}
-
-// If you don't want to see debugging output for each received frame, then comment out the following line:
-#define DEBUG_PRINT_EACH_RECEIVED_FRAME 0
-
-void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
-      struct timeval presentationTime, unsigned /*durationInMicroseconds*/) {
-
-printf("\tTHIS IS AFTER GETTING FRAME\n");
-
-
-
-
-#if(0)
-  // We've just received a frame of data.  (Optionally) print out information about it:
-#ifdef DEBUG_PRINT_EACH_RECEIVED_FRAME
-  if (fStreamId != NULL) envir() << "Stream \"" << fStreamId << "\"; ";
-  envir() << fSubsession.mediumName() << "/" << fSubsession.codecName() << ":\tReceived " << frameSize << " bytes";
-  if (numTruncatedBytes > 0) envir() << " (with " << numTruncatedBytes << " bytes truncated)";
-  char uSecsStr[6+1]; // used to output the 'microseconds' part of the presentation time
-  sprintf(uSecsStr, "%06u", (unsigned)presentationTime.tv_usec);
-  envir() << ".\tPresentation time: " << (int)presentationTime.tv_sec << "." << uSecsStr;
-  if (fSubsession.rtpSource() != NULL && !fSubsession.rtpSource()->hasBeenSynchronizedUsingRTCP()) {
-    envir() << "!"; // mark the debugging output to indicate that this presentation time is not RTCP-synchronized
-  }
-#ifdef DEBUG_PRINT_NPT
-  envir() << "\tNPT: " << fSubsession.getNormalPlayTime(presentationTime);
-#endif
-  envir() << "\n";
-#endif
-#else
-  //printf("__FUNCTION__  = %s\n", __FUNCTION__ );
- if(0 == strncmp(fSubsession.codecName(), "H264", 16))
- { 
-
-  printf("\tthis is 264 indeed!\n");
-  unsigned char nalu_header[4] = { 0, 0, 0, 1 };   
-  unsigned char extraData[256]; 
-  unsigned int num = 0;    
-  
-  SPropRecord *pSPropRecord;
-  pSPropRecord = parseSPropParameterSets(fSubsession.fmtp_spropparametersets(), num); 
-
-  
-  
-  unsigned int extraLen;
-  extraLen = 0;
-
-  //pSPropRecord[0] is sps 
-  //pSPropRecord[1] is pps
-  for(unsigned int i = 0; i < num; i++){ 
-   memcpy(&extraData[extraLen], &nalu_header[0], 4);
-   extraLen += 4;
-   memcpy(&extraData[extraLen], pSPropRecord[i].sPropBytes, pSPropRecord[i].sPropLength);
-   extraLen += pSPropRecord[i].sPropLength;
-  }/*for i*/
-
-  memcpy(&extraData[extraLen], &nalu_header[0], 4);
-  extraLen += 4;
-
-  delete[] pSPropRecord ;  
-
-  memcpy(pH264, &extraData[0], extraLen);
-  memcpy(pH264 + extraLen, fReceiveBuffer, frameSize); 
-  
-  int totalSize;
-  totalSize = extraLen + frameSize;
-
-  static FILE *fp = fopen("saved.h264", "wb");
-
-  fwrite(pH264, 1,  totalSize, fp);
-  fflush(fp);
-  printf("\tsaved %d bytes\n", totalSize);
-
-  //exit(0);
-
- }else{
-   printf("\thallo hallo hallo hallo hallo hallo hallo hallo hallo hallo hallo \n");
- }
- 
- 
- 
- /*if 0 == strncmp(fSubsession.codecName(), "H264", 16)*/
-#endif  
-  // Then continue, to request the next frame of data:
-  continuePlaying();
-}
-
-Boolean DummySink::continuePlaying() {
-
-  printf("DummySink::continuePlaying() \n");
-
-  if (fSource == NULL) return False; // sanity check (should not happen)
-
-  // Request the next frame of data from our input source.  "afterGettingFrame()" will get called later, when it arrives:
-  fSource->getNextFrame(fReceiveBuffer, DUMMY_SINK_RECEIVE_BUFFER_SIZE,
-                        afterGettingFrame, this,
-                        onSourceClosure, this);
-  return True;
-}

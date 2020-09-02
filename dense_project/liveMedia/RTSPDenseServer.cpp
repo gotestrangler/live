@@ -6,16 +6,19 @@
 #include "Base64.hh"
 #include "H264VideoStreamFramer.hh"
 #include "MPEGVideoStreamFramer.hh"
+#include "MPEG2TransportStreamFramer.hh"
 #include "RTPSink.hh"
 #include "H264VideoRTPSink.hh"
 #include "MPEG4ESVideoRTPSink.hh"
+#include "SimpleRTPSink.hh"
 #include "PassiveServerMediaSubsession.hh"
 #include "ByteStreamFileSource.hh"
 #include "Groupsock.hh"
 
 
-H264VideoStreamFramer* videoSource1;
-RTPSink* videoSink1;
+
+MPEG2TransportStreamFramer* videoSource1;
+SimpleRTPSink* videoSink1;
 
 
 
@@ -86,13 +89,13 @@ void RTSPDenseServer::DenseSession::setRTCPGSock(UsageEnvironment &env, in_addr 
 
 
 RTSPDenseServer::DenseSession*
-RTSPDenseServer::createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, RTPSink* videoSink, RTCPInstance* rtcp, 
+RTSPDenseServer::createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, SimpleRTPSink* videoSink, RTCPInstance* rtcp, 
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         ByteStreamFileSource* fileSource,
-        H264VideoStreamFramer* videoSource) {
+        MPEG2TransportStreamFramer* videoSource) {
 
-  //fprintf(stderr, "creTING NEW DENSE SESSION:\n" );
+  fprintf(stderr, "creTING NEW DENSE SESSION:\n" );
   return new DenseSession(rtpG, rtcpG, videoSink, rtcp, 
         passiveSession,
         denseSession,
@@ -118,7 +121,7 @@ RTSPDenseServer::RTSPDenseClientConnection::~RTSPDenseClientConnection() {
 
 RTSPServer::RTSPClientConnection*
 RTSPDenseServer::createNewClientConnection(int clientSocket, struct sockaddr_in clientAddr) {
-  //fprintf(stderr, "creTING NEW CLIENT CONNECTION: %d\nn", htons(clientAddr.sin_port));
+  fprintf(stderr, "creTING NEW CLIENT CONNECTION: %d\nn", htons(clientAddr.sin_port));
   //fprintf(stderr, "creTING NEW CLIENT CONNECTION: %d\n", ntohs(clientAddr.sin_port));
   return new RTSPDenseClientConnection(*this, clientSocket, clientAddr);
 
@@ -665,8 +668,13 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
 
         firstsesh->serversession = session; 
         // Create 'groupsocks' for RTP and RTCP:
+        //struct in_addr destinationAddress;
+        //destinationAddress.s_addr = chooseRandomIPv4SSMAddress(env);
+
+         char const* sessionAddressStr = "239.255.42.42";
+
         struct in_addr destinationAddress;
-        destinationAddress.s_addr = chooseRandomIPv4SSMAddress(env);
+        destinationAddress.s_addr = our_inet_addr(destinationAddressStr);
 
         const unsigned short rtpPortNum = 18888 + fOurRTSPServer.ref;
         //fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
@@ -684,7 +692,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
         OutPacketBuffer::maxSize = 100000;
         //RTPSink* videoSink;
-        firstsesh->videoSink = H264VideoRTPSink::createNew(env, firstsesh->rtpGroupsock, 96);
+        firstsesh->videoSink = SimpleRTPSink::createNew(env, firstsesh->rtpGroupsock, 96, 90000, "video", "MP2T", 1, True, False);
         videoSink1 = firstsesh->videoSink;
         //fprintf(stderr, "       Made Sink - CHECK INFO!! \n");
 
@@ -713,7 +721,12 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         char const* inputFileName = (char const*)fOurRTSPServer.filenames->Lookup((char const*)number);
         //char const* inputFileName2 = "output.264";
 
-        firstsesh->fileSource = ByteStreamFileSource::createNew(envir(), inputFileName);
+        unsigned const inputDataChunkSize
+        = TRANSPORT_PACKETS_PER_NETWORK_PACKET*TRANSPORT_PACKET_SIZE;
+
+
+
+        firstsesh->fileSource = ByteStreamFileSource::createNew(envir(), inputFileName, inputDataChunkSize);
 
        
         if (firstsesh->fileSource == NULL) {
@@ -725,15 +738,15 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
         FramedSource* videoES = firstsesh->fileSource;
 
 
-        firstsesh->videoSource = H264VideoStreamFramer::createNew(envir(), videoES);
+        //firstsesh->videoSource = H264VideoStreamFramer::createNew(envir(), videoES);
+        firstsesh->videoSource = MPEG2TransportStreamFramer::createNew(env, videoES);
         
         videoSource1 = firstsesh->videoSource; 
  
         firstsesh->videoSink->startPlaying(*firstsesh->videoSource, afterPlaying1, firstsesh->videoSink);//AFTERPLAYING!!! INSTEAD OF NULL
-
+       
         fOurRTSPServer.denseTable->Add((const char *)fClientInputSocket, firstsesh);
 
-  
         fOurRTSPServer.ref += 1; 
 
         fprintf(stderr, "/////////////// FERDIG MAKE /////////////\n");
