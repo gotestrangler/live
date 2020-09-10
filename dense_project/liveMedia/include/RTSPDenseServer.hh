@@ -22,6 +22,7 @@
 ///// DENSE SERVER //////
 class RTSPDenseClientConnection; //Forward
 class RTSPDenseClientSession; //Forward
+class DenseSession;
 class RTSPDenseServer: public RTSPServer {
     public:
     static RTSPDenseServer* createNew(UsageEnvironment& env, Port ourPort = 554,
@@ -54,10 +55,10 @@ class RTSPDenseServer: public RTSPServer {
 
     //Til oprettelsen: 
     HashTable* denseTable;
+
+    static void afterPlaying1(void* /*clientData*/);
      
 
- 
-    
     // A data structure that is used to implement "fTCPStreamingDatabase"
     // (and the "noteTCPStreamingOnSocket()" and "stopTCPStreamingOnSocket()" member functions):
     class streamingOverTCPRecord {
@@ -137,6 +138,7 @@ class RTSPDenseServer: public RTSPServer {
     void handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr);
 
     void make(ServerMediaSession *session, int number);
+
     
     protected:
         RTSPDenseClientConnection(RTSPDenseServer& ourServer, int clientSocket, struct sockaddr_in clientAddr);

@@ -19,6 +19,23 @@
 
 MPEG2TransportStreamFramer* videoSource1;
 SimpleRTPSink* videoSink1;
+HashTable* commonDenseTable;
+
+
+void afterPlaying1(void* clientData); // forward
+
+// A structure to hold the state of the current session.
+// It is used in the "afterPlaying()" function to clean up the session.
+struct sessionState_t {
+  FramedSource* source;
+  RTPSource* rtpSource;
+  RTCPInstance* rtcpInstanceReceive;
+  RTCPInstance* rtcpInstanceTransmit;
+  RTPSink* sink;
+  Groupsock* rtpGroupsock;
+  Groupsock* rtcpGroupsock;
+  RTSPServer* rtspServer;
+} sessionState;
 
 
 
@@ -636,16 +653,36 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
 
 
 
-void afterPlaying1(void* /*clientData*/) {
+void RTSPDenseServer::afterPlaying1(void* /*clientData*/) {
 
   fprintf(stderr, "AFTER PLAYING!");
+
   videoSink1->stopPlaying();
   Medium::close(videoSource1);
+  //DenseSession* closeSessionPointer = (DenseSession*)commonDenseTable->Lookup((char const*)1);
+  
+  int i = 0; 
+  
+    DenseSession* closeSessionPointer = (DenseSession*)commonDenseTable->Lookup((char const*)i);
+    if(closeSessionPointer != NULL){
+      Medium::close(closeSessionPointer->rtcp); // Note: Sends a RTCP BYE
+      Medium::close(closeSessionPointer->videoSink);
+      Medium::close(closeSessionPointer->passiveSession);
+      Medium::close(closeSessionPointer->serversession);
+      Medium::close(closeSessionPointer->fileSource);
+      Medium::close(this);
+    }
+
+    i = 1 + i; 
+  
+
+
+   
   // Note that this also closes the input file that this source read from.
 
   // Start playing once again:
   //play();
-  exit(1);
+  //exit(1);
 }
 
 
@@ -674,7 +711,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
          char const* sessionAddressStr = "239.255.42.42";
 
         struct in_addr destinationAddress;
-        destinationAddress.s_addr = our_inet_addr(destinationAddressStr);
+        destinationAddress.s_addr = our_inet_addr(sessionAddressStr);
 
         const unsigned short rtpPortNum = 18888 + fOurRTSPServer.ref;
         //fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
@@ -745,7 +782,9 @@ void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *sessio
  
         firstsesh->videoSink->startPlaying(*firstsesh->videoSource, afterPlaying1, firstsesh->videoSink);//AFTERPLAYING!!! INSTEAD OF NULL
        
-        fOurRTSPServer.denseTable->Add((const char *)fClientInputSocket, firstsesh);
+        fOurRTSPServer.denseTable->Add((char const*)number, firstsesh);
+
+        commonDenseTable = fOurRTSPServer.denseTable;
 
         fOurRTSPServer.ref += 1; 
 

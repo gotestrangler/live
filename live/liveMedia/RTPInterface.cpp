@@ -268,13 +268,13 @@ Boolean RTPInterface::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 				 int& tcpSocketNum, unsigned char& tcpStreamChannelId,
 				 Boolean& packetReadWasIncomplete) {
 
-  fprintf(stderr, "\n     RTPInterface::handleRead with PORT: %hu\n", (fGS->port().num()));
+  //fprintf(stderr, "\n     RTPInterface::handleRead with PORT: %hu\n", (fGS->port().num()));
       
   packetReadWasIncomplete = False; // by default
   Boolean readSuccess;
   if (fNextTCPReadStreamSocketNum < 0) {
     // Normal case: read from the (datagram) 'groupsock':
-    fprintf(stderr, "\n     Handle read RTPINTERFACE mama this is UDP\n");
+    //fprintf(stderr, "\n     Handle read RTPINTERFACE mama this is UDP\n");
     tcpSocketNum = -1;
     readSuccess = fGS->handleRead(buffer, bufferMaxSize, bytesRead, fromAddress);
   } else {

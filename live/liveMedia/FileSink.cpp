@@ -72,7 +72,7 @@ FileSink* FileSink::createNew(UsageEnvironment& env, char const* fileName,
 }
 
 Boolean FileSink::continuePlaying() {
-  fprintf(stderr, "\n       HEY HEY HEY HEYcontinuePlaying()\n");
+  //fprintf(stderr, "\n       HEY HEY HEY HEYcontinuePlaying()\n");
   if (fSource == NULL) return False;
 
   fSource->getNextFrame(fBuffer, fBufferSize,

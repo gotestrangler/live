@@ -119,7 +119,6 @@ int main(int argc, char** argv) {
 
 
 
-
   ServerMediaSession* sms
     = ServerMediaSession::createNew(*env, "testStream", (char const*)rtspServer->filenames->Lookup((const char *)1),
 		   "Session streamed by \"testMPEG2TransportStreamer\"", isSSM);
@@ -140,33 +139,4 @@ int main(int argc, char** argv) {
   return 0; // only to prevent compiler warning
 }
 
-void afterPlaying(void* /*clientData*/) {
-  *env << "...done reading from file\n";
 
-  videoSink->stopPlaying();
-  Medium::close(videoSource);
-  // Note that this also closes the input file that this source read from.
-
-  //play();
-}
-
-void play() {
-  unsigned const inputDataChunkSize
-    = TRANSPORT_PACKETS_PER_NETWORK_PACKET*TRANSPORT_PACKET_SIZE;
-
-  // Open the input file as a 'byte-stream file source':
-  ByteStreamFileSource* fileSource
-    = ByteStreamFileSource::createNew(*env, inputFileName, inputDataChunkSize);
-  if (fileSource == NULL) {
-    *env << "Unable to open file \"" << inputFileName
-	 << "\" as a byte-stream file source\n";
-    exit(1);
-  }
-
-  // Create a 'framer' for the input source (to give us proper inter-packet gaps):
-  videoSource = MPEG2TransportStreamFramer::createNew(*env, fileSource);
-
-  // Finally, start playing:
-  *env << "Beginning to read from file...\n";
-  videoSink->startPlaying(*videoSource, afterPlaying, videoSink);
-}

@@ -33,7 +33,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <../liveMedia/include/RTSPDenseServer.hh>
 
 UsageEnvironment* env;
-char const* inputFileName = "test.264";
+char const* inputFileName = "../extras/test.264";
 H264VideoStreamFramer* videoSource;
 RTPSink* videoSink;
 
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
   env = BasicUsageEnvironment::createNew(*scheduler);
 
-  RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554);
+  RTSPServer* rtspServer = RTSPServer::createNew(*env, 8554);
   if (rtspServer == NULL) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);
@@ -136,8 +136,8 @@ void afterPlaying(void* /*clientData*/) {
   // Note that this also closes the input file that this source read from.
 
   // Start playing once again:
-  play();
-  //exit(1);
+  //play();
+  exit(1);
 }
 
 

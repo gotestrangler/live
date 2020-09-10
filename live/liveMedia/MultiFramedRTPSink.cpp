@@ -404,6 +404,7 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
   fNumFramesUsedSoFar = 0;
 
   if (fNoFramesLeft) {
+    
     // We're done:
     onSourceClosure();
   } else {
