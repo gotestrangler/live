@@ -1,3 +1,6 @@
 [submodule "dense_project/mp4analyser"]
 	path = dense_project/mp4analyser
 	url = https://github.com/essential61/mp4analyser
+[submodule "dense_project/extras/mpeg-ts-inspector"]
+	path = dense_project/extras/mpeg-ts-inspector
+	url = https://github.com/brendanlong/mpeg-ts-inspector.git

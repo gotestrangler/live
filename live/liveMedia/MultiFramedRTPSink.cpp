@@ -66,6 +66,8 @@ void MultiFramedRTPSink
 			 unsigned /*numBytesInFrame*/,
 			 struct timeval framePresentationTime,
 			 unsigned /*numRemainingBytes*/) {
+
+
   // default implementation: If this is the first frame in the packet,
   // use its presentationTime for the RTP timestamp:
   if (isFirstFrameInPacket()) {
@@ -110,10 +112,14 @@ void MultiFramedRTPSink::setMarkerBit() {
 
 void MultiFramedRTPSink::setTimestamp(struct timeval framePresentationTime) {
   // First, convert the presentation time to a 32-bit RTP timestamp:
+
+
   fCurrentTimestamp = convertToRTPTimestamp(framePresentationTime);
 
+  
   // Then, insert it into the RTP packet:
   fOutBuf->insertWord(fCurrentTimestamp, fTimestampPosition);
+
 }
 
 void MultiFramedRTPSink::setSpecialHeaderWord(unsigned word,
@@ -181,6 +187,8 @@ void MultiFramedRTPSink::buildAndSendPacket(Boolean isFirstPacket) {
   rtpHdr |= (fRTPPayloadType<<16);
   rtpHdr |= fSeqNo; // sequence number
   fOutBuf->enqueueWord(rtpHdr);
+
+
 
   // Note where the RTP timestamp will go.
   // (We can't fill this in until we start packing payload frames.)

@@ -22,6 +22,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "BasicUsageEnvironment.hh"
 #include "GroupsockHelper.hh"
 #include <../liveMedia/include/RTSPDenseServer.hh>
+#include <stdio.h>
+#include <string.h>
 
 // To stream using "source-specific multicast" (SSM), uncomment the following:
 //#define USE_SSM 1
@@ -45,6 +47,7 @@ FramedSource* videoSource;
 RTPSink* videoSink;
 
 void play(); // forward
+void strip(char* str); //forward
 
 int main(int argc, char** argv) {
   // Begin by setting up our usage environment:
@@ -102,7 +105,29 @@ int main(int argc, char** argv) {
 
 */
 
-  RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554);
+
+  char* line = NULL;
+  size_t len = 0;
+  int line_num = 0;
+  while (getline(&line, &len, stdin) != -1)
+  {
+      strip(line);
+      if (line_num % 2 == 0)
+          printf("[%d]: %s\n", line_num, line);
+      line_num++;
+  }
+
+
+ServerMediaSession* sms
+    = ServerMediaSession::createNew(*env, "testStream", argv[1],
+		   "Session streamed by \"testMPEG2TransportStreamer\"", isSSM, "Hei hei hei gote\n");
+  
+  
+
+  //RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554);
+  RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554, NULL, 65U, NULL, 1, sms);
+  
+
   // Note that this (attempts to) start a server on the default RTSP server
   // port: 554.  To use a different port number, add it as an extra
   // (optional) parameter to the "RTSPServer::createNew()" call above.
@@ -110,6 +135,10 @@ int main(int argc, char** argv) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);
   }
+
+  char* url = rtspServer->rtspURL(sms);
+  *env << "Play this stream using the URL \"" << url << "\"\n";
+  delete[] url;
 
 
  for(int i = 0; i < (argc - 1); i++){
@@ -119,16 +148,6 @@ int main(int argc, char** argv) {
 
 
 
-  ServerMediaSession* sms
-    = ServerMediaSession::createNew(*env, "testStream", (char const*)rtspServer->filenames->Lookup((const char *)1),
-		   "Session streamed by \"testMPEG2TransportStreamer\"", isSSM);
-  rtspServer->addServerMediaSession(sms);
-  
-
-  char* url = rtspServer->rtspURL(sms);
-  *env << "Play this stream using the URL \"" << url << "\"\n";
-  delete[] url;
-
 
   // Finally, start the streaming:
   *env << "Beginning streaming...\n";
@@ -137,6 +156,29 @@ int main(int argc, char** argv) {
   env->taskScheduler().doEventLoop(); // does not return
 
   return 0; // only to prevent compiler warning
+}
+
+
+
+
+/* Remove newline characters from end of string */
+void strip(char* str)
+{
+  int len;
+  if (str == NULL)
+    {
+      return;
+    }
+  len = strlen(str);
+  if (str[len - 1] == '\n')
+    {
+      str[len - 1] = '\0';
+    }
+  len = strlen(str);
+  if (str[len - 1] == '\r')
+    {
+      str[len - 1] = '\0';
+    }
 }
 
 

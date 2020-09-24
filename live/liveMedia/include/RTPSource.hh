@@ -37,6 +37,8 @@ public:
 
   Boolean curPacketMarkerBit() const { return fCurPacketMarkerBit; }
 
+  void setFirstTimeStamp(unsigned long input){ ourFirstTimestamp = input;}
+
   unsigned char rtpPayloadFormat() const { return fRTPPayloadFormat; }
 
   virtual Boolean hasBeenSynchronizedUsingRTCP();
@@ -98,6 +100,7 @@ protected:
   Boolean fCurPacketHasBeenSynchronizedUsingRTCP;
   u_int32_t fLastReceivedSSRC;
   class RTCPInstance* fRTCPInstanceForMultiplexedRTCPPackets;
+  unsigned long ourFirstTimestamp;
 
 private:
   // redefined virtual functions:

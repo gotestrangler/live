@@ -59,6 +59,10 @@ public:
       // ensures that the next timestamp to be used will correspond to
       // the current 'wall clock' time.
 
+  u_int32_t getBase() const { return fTimestampBase; }
+  u_int32_t getFirstTimeStamp() const { return firstTimeStamp; }
+  unsigned char getFreq() const { return fTimestampBase; }
+
   RTPTransmissionStatsDB& transmissionStatsDB() const {
     return *fTransmissionStatsDB;
   }
@@ -114,6 +118,8 @@ protected:
   struct timeval fTotalOctetCountStartTime, fInitialPresentationTime, fMostRecentPresentationTime;
   u_int32_t fCurrentTimestamp;
   u_int16_t fSeqNo;
+  u_int32_t firstTimeStamp;
+ 
 
 private:
   // redefined virtual functions:
@@ -121,7 +127,7 @@ private:
 
 private:
   u_int32_t fSSRC, fTimestampBase;
-  unsigned fTimestampFrequency;
+  unsigned char fTimestampFrequency;
   Boolean fNextTimestampHasBeenPreset;
   Boolean fEnableRTCPReports; // whether RTCP "SR" reports should be sent for this sink (default: True)
   char const* fRTPPayloadFormatName;

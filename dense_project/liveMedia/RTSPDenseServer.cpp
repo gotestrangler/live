@@ -14,6 +14,8 @@
 #include "PassiveServerMediaSubsession.hh"
 #include "ByteStreamFileSource.hh"
 #include "Groupsock.hh"
+#include <string>
+
 
 
 
@@ -45,7 +47,7 @@ RTSPDenseServer* RTSPDenseServer
 ::createNew(UsageEnvironment& env, Port ourPort,
 	    UserAuthenticationDatabase* authDatabase,
 	    unsigned reclamationSeconds,
-	    Boolean streamRTPOverTCP, int number) {
+	    Boolean streamRTPOverTCP, int number, ServerMediaSession * startingSession) {
 
 
   //fprintf(stderr, "\n 2 number is: %d\n", number);
@@ -55,9 +57,15 @@ RTSPDenseServer* RTSPDenseServer
   RTSPDenseServer * ne = new RTSPDenseServer(env, ourSocket, ourPort,
 					    authDatabase,
 					    reclamationSeconds,
-					    streamRTPOverTCP, number);
+					    streamRTPOverTCP, number, startingSession);
 
   ne->ref = 0; 
+
+  ne->addServerMediaSession(startingSession);
+  int i;
+  for(i = 0; i < number; i++){
+    ne->make(startingSession, i);
+  }
   
   return ne;
 }
@@ -65,7 +73,7 @@ RTSPDenseServer* RTSPDenseServer
 RTSPDenseServer::RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase,
 				 unsigned reclamationSeconds,
-				 Boolean streamRTPOverTCP, int number)
+				 Boolean streamRTPOverTCP, int number, ServerMediaSession *startingSession)
   : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds),
     fStreamRTPOverTCP(streamRTPOverTCP), fAllowStreamingRTPOverTCP(True), 
     fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)), denseTable(HashTable::create(ONE_WORD_HASH_KEYS)), filenames(HashTable::create(ONE_WORD_HASH_KEYS)), number(number) {
@@ -74,6 +82,131 @@ RTSPDenseServer::RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourP
 RTSPDenseServer::~RTSPDenseServer() {
     cleanup();
 }
+
+
+void RTSPDenseServer::make(ServerMediaSession *session, int number){
+
+      fprintf(stderr, "/////////////// YOUR MAKE /////////////\n");
+      //fprintf(stderr, "Checking input socket ID: %d\n", fClientInputSocket);
+      //fprintf(stderr, "Checking output socket ID: %d\n", fClientOutputSocket);
+      //fprintf(stderr, "ref of the densesession: %d\n", fOurRTSPServer.ref );
+
+
+        UsageEnvironment& env = envir();
+
+        DenseSession* firstsesh = createNewDenseSession(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+        firstsesh->serversession = session; 
+        
+        // Create 'groupsocks' for RTP and RTCP:
+        //struct in_addr destinationAddress;
+        //destinationAddress.s_addr = chooseRandomIPv4SSMAddress(env);
+
+         char const* sessionAddressStr = "239.255.42.42";
+
+        struct in_addr destinationAddress;
+        destinationAddress.s_addr = our_inet_addr(sessionAddressStr);
+
+        const unsigned short rtpPortNum = 18888 + ref;
+        //fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
+        const unsigned short rtcpPortNum = rtpPortNum+ 1 + ref;
+        //fprintf(stderr, "rtcpPortNum: %hu\n", rtcpPortNum);
+        const unsigned char ttl = 255;
+
+        Port rtpPort(rtpPortNum);
+        Port rtcpPort(rtcpPortNum);
+
+        firstsesh->setRTPGSock(env, destinationAddress, rtpPort, ttl);
+
+        firstsesh->setRTCPGSock(env, destinationAddress, rtcpPort, ttl);
+
+        // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
+        OutPacketBuffer::maxSize = 100000;
+        //RTPSink* videoSink;
+        firstsesh->videoSink = SimpleRTPSink::createNew(env, firstsesh->rtpGroupsock, 96, 90000, "video", "MP2T", 1, True, False);
+
+        u_int32_t sinkbase =  firstsesh->videoSink->getBase(); 
+        unsigned char sinkfreq = firstsesh->videoSink->getFreq();
+        u_int32_t firstStamp = firstsesh->videoSink->getFirstTimeStamp();
+
+
+        fprintf(stderr, "Har laget SimpleRTPSink og den har for oyeblikket timestamp: %lu\n Den har for oyeblikket sinkbase: %lu\n Den har for oybelikket sinkfreq: %d\n Den har for oybelikket first timestamp: %lu\n\n", (unsigned long)firstsesh->videoSink->firstTimestamp, sinkbase, sinkfreq, firstStamp);
+
+      
+        fprintf(stderr, "/////////////// YOUR MAKE 1 /////////////\n");
+
+
+        videoSink1 = firstsesh->videoSink;
+        //fprintf(stderr, "       Made Sink - CHECK INFO!! \n");
+
+        
+        // Create (and start) a 'RTCP instance' for this RTP sink:
+        const unsigned estimatedSessionBandwidth = 500; // in kbps; for RTCP b/w share
+        const unsigned maxCNAMElen = 100;
+        unsigned char CNAME[maxCNAMElen+1];
+        gethostname((char*)CNAME, maxCNAMElen);
+        CNAME[maxCNAMElen] = '\0'; // just in case
+        // *env << "CNAME: " << CNAME  << "\n";
+        //fprintf(stderr, "       Making RTCP with CNAME: %s\n", CNAME);
+        //RTCPInstance* rtcp;
+        firstsesh->rtcp = RTCPInstance::createNew(env, firstsesh->rtcpGroupsock,
+                estimatedSessionBandwidth, CNAME,
+                firstsesh->videoSink, NULL // we're a server 
+                ,True ); // we're a SSM source
+        // Note: This starts RTCP running automatically
+
+        //fprintf(stderr, "       Made RTCP\n");
+
+        fprintf(stderr, "/////////////// YOUR MAKE 2 /////////////\n");
+
+        session->addSubsession(PassiveServerMediaSubsession::createNew(*firstsesh->videoSink, firstsesh->rtcp));
+
+        //fprintf(stderr, "       finsihed addservermediaession\n");
+
+        //char const* inputFileName = (char const*)filenames->Lookup((char const*)number);
+        char const* inputFileName = "../extras/mix.ts";
+
+        unsigned const inputDataChunkSize
+        = TRANSPORT_PACKETS_PER_NETWORK_PACKET*TRANSPORT_PACKET_SIZE;
+
+        fprintf(stderr, "/////////////// YOUR MAKE 3 /////////////\n");
+
+        firstsesh->fileSource = ByteStreamFileSource::createNew(envir(), inputFileName, inputDataChunkSize);
+
+        
+        if (firstsesh->fileSource == NULL) {
+          envir() << "Unable to open file \"" << inputFileName
+              << "\" as a byte-stream file source\n";
+          exit(1);
+        }
+
+        FramedSource* videoES = firstsesh->fileSource;
+
+
+        //firstsesh->videoSource = H264VideoStreamFramer::createNew(envir(), videoES);
+        firstsesh->videoSource = MPEG2TransportStreamFramer::createNew(env, videoES);
+        
+        videoSource1 = firstsesh->videoSource; 
+ 
+        firstsesh->videoSink->startPlaying(*firstsesh->videoSource, afterPlaying1, firstsesh->videoSink);//AFTERPLAYING!!! INSTEAD OF NULL
+
+        fprintf(stderr, "/////////////// YOUR MAKE 4 /////////////\n");
+
+        denseTable->Add((char const*)number, firstsesh);
+
+        commonDenseTable = denseTable;
+
+        ref += 1;
+
+        fprintf(stderr, "/////////////// FERDIG MAKE /////////////\n");
+
+        //handleCmd_DESCRIBE('teststream'); 
+
+}
+
+
+
+
 
 
 
@@ -666,11 +799,11 @@ void RTSPDenseServer::afterPlaying1(void* /*clientData*/) {
     DenseSession* closeSessionPointer = (DenseSession*)commonDenseTable->Lookup((char const*)i);
     if(closeSessionPointer != NULL){
       Medium::close(closeSessionPointer->rtcp); // Note: Sends a RTCP BYE
-      Medium::close(closeSessionPointer->videoSink);
-      Medium::close(closeSessionPointer->passiveSession);
-      Medium::close(closeSessionPointer->serversession);
-      Medium::close(closeSessionPointer->fileSource);
-      Medium::close(this);
+      //Medium::close(closeSessionPointer->videoSink);
+      //Medium::close(closeSessionPointer->passiveSession);
+      //Medium::close(closeSessionPointer->serversession);
+      //Medium::close(closeSessionPointer->fileSource);
+      
     }
 
     i = 1 + i; 
@@ -684,118 +817,6 @@ void RTSPDenseServer::afterPlaying1(void* /*clientData*/) {
   //play();
   //exit(1);
 }
-
-
-
-
-
-
-
-void RTSPDenseServer::RTSPDenseClientConnection::make(ServerMediaSession *session, int number){
-
-      fprintf(stderr, "/////////////// YOUR MAKE /////////////\n");
-      //fprintf(stderr, "Checking input socket ID: %d\n", fClientInputSocket);
-      //fprintf(stderr, "Checking output socket ID: %d\n", fClientOutputSocket);
-      //fprintf(stderr, "ref of the densesession: %d\n", fOurRTSPServer.ref );
-
-
-        UsageEnvironment& env = envir();
-
-        DenseSession* firstsesh = fOurRTSPServer.createNewDenseSession(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
-        firstsesh->serversession = session; 
-        // Create 'groupsocks' for RTP and RTCP:
-        //struct in_addr destinationAddress;
-        //destinationAddress.s_addr = chooseRandomIPv4SSMAddress(env);
-
-         char const* sessionAddressStr = "239.255.42.42";
-
-        struct in_addr destinationAddress;
-        destinationAddress.s_addr = our_inet_addr(sessionAddressStr);
-
-        const unsigned short rtpPortNum = 18888 + fOurRTSPServer.ref;
-        //fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
-        const unsigned short rtcpPortNum = rtpPortNum+ 1 + fOurRTSPServer.ref;
-        //fprintf(stderr, "rtcpPortNum: %hu\n", rtcpPortNum);
-        const unsigned char ttl = 255;
-
-        Port rtpPort(rtpPortNum);
-        Port rtcpPort(rtcpPortNum);
-
-        firstsesh->setRTPGSock(env, destinationAddress, rtpPort, ttl);
-
-        firstsesh->setRTCPGSock(env, destinationAddress, rtcpPort, ttl);
-
-        // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
-        OutPacketBuffer::maxSize = 100000;
-        //RTPSink* videoSink;
-        firstsesh->videoSink = SimpleRTPSink::createNew(env, firstsesh->rtpGroupsock, 96, 90000, "video", "MP2T", 1, True, False);
-        videoSink1 = firstsesh->videoSink;
-        //fprintf(stderr, "       Made Sink - CHECK INFO!! \n");
-
-        
-        // Create (and start) a 'RTCP instance' for this RTP sink:
-        const unsigned estimatedSessionBandwidth = 500; // in kbps; for RTCP b/w share
-        const unsigned maxCNAMElen = 100;
-        unsigned char CNAME[maxCNAMElen+1];
-        gethostname((char*)CNAME, maxCNAMElen);
-        CNAME[maxCNAMElen] = '\0'; // just in case
-        // *env << "CNAME: " << CNAME  << "\n";
-        //fprintf(stderr, "       Making RTCP with CNAME: %s\n", CNAME);
-        //RTCPInstance* rtcp;
-        firstsesh->rtcp = RTCPInstance::createNew(env, firstsesh->rtcpGroupsock,
-                estimatedSessionBandwidth, CNAME,
-                firstsesh->videoSink, NULL // we're a server 
-                ,True ); // we're a SSM source
-        // Note: This starts RTCP running automatically
-
-        //fprintf(stderr, "       Made RTCP\n");
-
-        session->addSubsession(PassiveServerMediaSubsession::createNew(*firstsesh->videoSink, firstsesh->rtcp));
-
-        //fprintf(stderr, "       finsihed addservermediaession\n");
-
-        char const* inputFileName = (char const*)fOurRTSPServer.filenames->Lookup((char const*)number);
-        //char const* inputFileName2 = "output.264";
-
-        unsigned const inputDataChunkSize
-        = TRANSPORT_PACKETS_PER_NETWORK_PACKET*TRANSPORT_PACKET_SIZE;
-
-
-
-        firstsesh->fileSource = ByteStreamFileSource::createNew(envir(), inputFileName, inputDataChunkSize);
-
-       
-        if (firstsesh->fileSource == NULL) {
-          envir() << "Unable to open file \"" << inputFileName
-              << "\" as a byte-stream file source\n";
-          exit(1);
-        }
-
-        FramedSource* videoES = firstsesh->fileSource;
-
-
-        //firstsesh->videoSource = H264VideoStreamFramer::createNew(envir(), videoES);
-        firstsesh->videoSource = MPEG2TransportStreamFramer::createNew(env, videoES);
-        
-        videoSource1 = firstsesh->videoSource; 
- 
-        firstsesh->videoSink->startPlaying(*firstsesh->videoSource, afterPlaying1, firstsesh->videoSink);//AFTERPLAYING!!! INSTEAD OF NULL
-       
-        fOurRTSPServer.denseTable->Add((char const*)number, firstsesh);
-
-        commonDenseTable = fOurRTSPServer.denseTable;
-
-        fOurRTSPServer.ref += 1; 
-
-        fprintf(stderr, "/////////////// FERDIG MAKE /////////////\n");
-
-        //handleCmd_DESCRIBE('teststream'); 
-
-}
-
-
-
 
 
 
@@ -833,6 +854,24 @@ void RTSPDenseServer::RTSPDenseClientConnection
     // Begin by looking up the "ServerMediaSession" object for the specified "urlTotalSuffix":
     //fprintf(stderr, "\nTryin to find it first\n");
     session = fOurServer.lookupServerMediaSession(urlTotalSuffix);
+
+    int i = 0; 
+  
+    DenseSession* closeSessionPointer = (DenseSession*)commonDenseTable->Lookup((char const*)i);
+    
+    
+    u_int32_t firstStamp = closeSessionPointer->videoSink->getFirstTimeStamp();
+    
+    
+    fprintf(stderr, "Skal legge til firstTimeStamp til ServerMediaSession - timestamp (ikke 0): %lu\n", (unsigned long)firstStamp);
+
+
+    std::string s = std::to_string(firstStamp);
+    char const *pchar = s.c_str();
+
+    session->addTimestamp(pchar);
+
+
     if (session == NULL) {
       fprintf(stderr, "This is describe -> the lookupservermediasession = NULL\n");
       handleCmd_notFound();
@@ -840,34 +879,10 @@ void RTSPDenseServer::RTSPDenseClientConnection
     }
       
       int fNumStreamStates = session->numSubsessions();
-      fprintf(stderr, "     Before make() the number of subsessions is: %d\n", fNumStreamStates);
       
-      
-     
-        fprintf(stderr, "\nNumber number number: %d \n", fOurRTSPServer.number);
-
-        int i;
-        for(i = 0; i < fOurRTSPServer.number; i++){
-          make(session, i);
-        }
-
+    
         
-        /*
-
-
-      DenseSession* dsession = (DenseSession*)fOurRTSPServer.denseTable->Lookup((const char *)fClientInputSocket);
-      Groupsock * rt = dsession->rtpGroupsock;
-      Groupsock * rc = dsession->rtcpGroupsock;
-
-      fprintf(stderr, "\nAfter make rtp port> %d\n", rt->port().num());
-      fprintf(stderr, "\nAfter make rtcp port> %d\n", rc->port().num());
-      
-
-      session = dsession->serversession;
-      fprintf(stderr, "\nAfter make rtcp port> %s\n", session->streamName());
-      //session = fOurServer.lookupServerMediaSession(newNameSuffix);
-      
-    */
+     
     fNumStreamStates = session->numSubsessions();
 
 

@@ -50,10 +50,12 @@ protected:
       // called only by createNew(), or by subclass constructors
   virtual ~SimpleRTPSource();
 
+
 protected:
   // redefined virtual functions:
   virtual Boolean processSpecialHeader(BufferedPacket* packet,
                                        unsigned& resultSpecialHeaderSize);
+
   virtual char const* MIMEtype() const;
 
 private:

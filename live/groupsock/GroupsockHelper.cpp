@@ -389,7 +389,7 @@ int readSocket(UsageEnvironment& env,
     return -1;
   }
 
-    //fprintf(stderr, "       readsocket -> PORT: %hu\n", htons(fromAddress.sin_port));
+    fprintf(stderr, "       readsocket -> PORT: %hu\n", htons(fromAddress.sin_port));
     //fprintf(stderr, "       readsocket -> PORT: %hu\n", ntohs(fromAddress.sin_port));
 
   return bytesRead;

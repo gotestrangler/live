@@ -22,6 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "InputFile.hh"
 #include "GroupsockHelper.hh"
 
+
 ////////// ByteStreamFileSource //////////
 
 ByteStreamFileSource*
@@ -119,6 +120,8 @@ void ByteStreamFileSource::doStopGettingFrames() {
 }
 
 void ByteStreamFileSource::fileReadableHandler(ByteStreamFileSource* source, int /*mask*/) {
+  
+
   if (!source->isCurrentlyAwaitingData()) {
     source->doStopGettingFrames(); // we're not ready for the data yet
     return;
@@ -127,6 +130,8 @@ void ByteStreamFileSource::fileReadableHandler(ByteStreamFileSource* source, int
 }
 
 void ByteStreamFileSource::doReadFromFile() {
+  //fprintf(stderr, "ByteStreamFileSource::doReadFromFile()\n");
+  u_int32_t firstTimestamp;
   // Try to read as many bytes as will fit in the buffer provided (or "fPreferredFrameSize" if less)
   if (fLimitNumBytesToStream && fNumBytesToStream < (u_int64_t)fMaxSize) {
     fMaxSize = (unsigned)fNumBytesToStream;
@@ -136,9 +141,12 @@ void ByteStreamFileSource::doReadFromFile() {
   }
 #ifdef READ_FROM_FILES_SYNCHRONOUSLY
   fFrameSize = fread(fTo, 1, fMaxSize, fFid);
+  //fprintf(stderr, "6666666666666666666666ByteStreamFileSource::doReadFromFile() - have read %d from file\n", fFrameSize);
 #else
   if (fFidIsSeekable) {
     fFrameSize = fread(fTo, 1, fMaxSize, fFid);
+    //fprintf(stderr, "ByteStreamFileSource::doReadFromFile() - have read %d from file\n", fFrameSize);
+
   } else {
     // For non-seekable files (e.g., pipes), call "read()" rather than "fread()", to ensure that the read doesn't block:
     fFrameSize = read(fileno(fFid), fTo, fMaxSize);
@@ -152,10 +160,16 @@ void ByteStreamFileSource::doReadFromFile() {
 
   // Set the 'presentation time':
   if (fPlayTimePerFrame > 0 && fPreferredFrameSize > 0) {
+      fprintf(stderr, "BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM> %lu %lu, %d\n", fPresentationTime.tv_sec, fPresentationTime.tv_usec, fFrameSize);
+
     if (fPresentationTime.tv_sec == 0 && fPresentationTime.tv_usec == 0) {
       // This is the first frame, so use the current time:
       gettimeofday(&fPresentationTime, NULL);
+
+      //fprintf(stderr, "ByteStreamFileSource::doReadFromFile() - presentation time> %lu %lu\n", fPresentationTime.tv_sec, fPresentationTime.tv_usec);
+
     } else {
+
       // Increment by the play time of the previous data:
       unsigned uSeconds	= fPresentationTime.tv_usec + fLastPlayTime;
       fPresentationTime.tv_sec += uSeconds/1000000;
@@ -169,6 +183,9 @@ void ByteStreamFileSource::doReadFromFile() {
     // We don't know a specific play time duration for this data,
     // so just record the current time as being the 'presentation time':
     gettimeofday(&fPresentationTime, NULL);
+  
+      fprintf(stderr, "hallo hallo hallo hallo hallo halo hallo - presentation time> %lu %lu, %d, %d, %d, %d\n", fPresentationTime.tv_sec, fPresentationTime.tv_usec, fFrameSize, fDurationInMicroseconds, fPreferredFrameSize, fPlayTimePerFrame);
+
   }
 
   // Inform the reader that he has data:

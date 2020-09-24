@@ -47,6 +47,7 @@ protected:
 						    unsigned packetSize);
       // The default implementation returns True, but this can be redefined
 
+
 protected:
   Boolean fCurrentPacketBeginsFrame;
   Boolean fCurrentPacketCompletesFrame;

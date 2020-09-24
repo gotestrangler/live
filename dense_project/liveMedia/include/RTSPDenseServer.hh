@@ -28,7 +28,7 @@ class RTSPDenseServer: public RTSPServer {
     static RTSPDenseServer* createNew(UsageEnvironment& env, Port ourPort = 554,
                             UserAuthenticationDatabase* authDatabase = NULL,
                             unsigned reclamationSeconds = 65,
-                            Boolean streamRTPOverTCP = False, int number = 1);
+                            Boolean streamRTPOverTCP = False, int number = 1, ServerMediaSession *startingSession = NULL);
     
     int ref;
     int number;
@@ -38,13 +38,15 @@ class RTSPDenseServer: public RTSPServer {
     RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourPort,
                     UserAuthenticationDatabase* authDatabase,
                     unsigned reclamationSeconds,
-                    Boolean streamRTPOverTCP, int number);
+                    Boolean streamRTPOverTCP, int number, ServerMediaSession *startingSession);
     // called only by createNew();
     virtual ~RTSPDenseServer ();
     
 
     friend class RTSPServer;
     friend class GenericMediaServer;
+
+    void make(ServerMediaSession *session, int number);
 
 
     private:
@@ -137,7 +139,7 @@ class RTSPDenseServer: public RTSPServer {
 
     void handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr);
 
-    void make(ServerMediaSession *session, int number);
+    
 
     
     protected:

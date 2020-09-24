@@ -91,6 +91,14 @@ ServerMediaSession::~ServerMediaSession() {
   delete[] fMiscSDPLines;
 }
 
+
+Boolean ServerMediaSession::addTimestamp(char const * timestamp){
+  fprintf(stderr, "Skal leggGHADFKGNDLFKZGNZDØNM\n");
+  fMiscSDPLines = (char*)timestamp;
+  return true; 
+}
+
+
 Boolean
 ServerMediaSession::addSubsession(ServerMediaSubsession* subsession) {
 
@@ -131,6 +139,7 @@ ServerMediaSession::addSubsession(ServerMediaSubsession* subsession) {
   //fprintf(stderr, "       addSubsession - return true\n");
   return True;
 }
+
 
 void ServerMediaSession::testScaleFactor(float& scale) {
   // First, try setting all subsessions to the desired scale.
@@ -336,7 +345,7 @@ char* ServerMediaSession::generateSDPDescription() {
       "%s"
       "a=x-qt-text-nam:%s\r\n"
       "a=x-qt-text-inf:%s\r\n"
-      "%s";
+      "a=x-qt-text-misc:%s\r\n";
     sdpLength += strlen(sdpPrefixFmt)
       + 20 + 6 + 20 + ipAddressStrSize
       + strlen(fDescriptionSDPString)

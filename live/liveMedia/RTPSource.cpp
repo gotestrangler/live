@@ -40,6 +40,7 @@ Boolean RTPSource::lookupByName(UsageEnvironment& env,
   return True;
 }
 
+
 Boolean RTPSource::hasBeenSynchronizedUsingRTCP() {
   return fCurPacketHasBeenSynchronizedUsingRTCP;
 }
@@ -67,7 +68,6 @@ RTPSource::~RTPSource() {
 void RTPSource::getAttributes() const {
   envir().setResultMsg(""); // Fix later to get attributes from  header #####
 }
-
 
 ////////// RTPReceptionStatsDB //////////
 

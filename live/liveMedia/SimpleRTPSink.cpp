@@ -28,7 +28,7 @@ SimpleRTPSink::SimpleRTPSink(UsageEnvironment& env, Groupsock* RTPgs,
 			     char const* rtpPayloadFormatName,
 			     unsigned numChannels,
 			     Boolean allowMultipleFramesPerPacket,
-			     Boolean doNormalMBitRule)
+			     Boolean doNormalMBitRule, u_int32_t firstTimestamp)
   : MultiFramedRTPSink(env, RTPgs, rtpPayloadFormat,
 		       rtpTimestampFrequency, rtpPayloadFormatName,
 		       numChannels),
@@ -50,13 +50,13 @@ SimpleRTPSink::createNew(UsageEnvironment& env, Groupsock* RTPgs,
 			 char const* rtpPayloadFormatName,
 			 unsigned numChannels,
 			 Boolean allowMultipleFramesPerPacket,
-			 Boolean doNormalMBitRule) {
+			 Boolean doNormalMBitRule, u_int32_t firstTimestamp) {
   return new SimpleRTPSink(env, RTPgs,
 			   rtpPayloadFormat, rtpTimestampFrequency,
 			   sdpMediaTypeString, rtpPayloadFormatName,
 			   numChannels,
 			   allowMultipleFramesPerPacket,
-			   doNormalMBitRule);
+			   doNormalMBitRule, firstTimestamp);
 }
 
 void SimpleRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
@@ -64,6 +64,8 @@ void SimpleRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
 					   unsigned numBytesInFrame,
 					   struct timeval framePresentationTime,
 					   unsigned numRemainingBytes) {
+
+
   if (numRemainingBytes == 0) {
     // This packet contains the last (or only) fragment of the frame.
     // Set the RTP 'M' ('marker') bit, if appropriate:
@@ -74,6 +76,11 @@ void SimpleRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
     setMarkerBit();
     fSetMBitOnNextPacket = False;
   }
+
+
+
+
+  
 
   // Important: Also call our base class's doSpecialFrameHandling(),
   // to set the packet's timestamp:

@@ -54,6 +54,8 @@ public:
 
   char const* streamName() const { return fStreamName; }
 
+  Boolean addTimestamp(char const * timestamp);
+
   Boolean addSubsession(ServerMediaSubsession* subsession);
   unsigned numSubsessions() const { return fSubsessionCounter; }
 

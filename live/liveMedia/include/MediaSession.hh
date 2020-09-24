@@ -104,6 +104,7 @@ protected:
   Boolean initializeWithSDP(char const* sdpDescription);
   Boolean parseSDPLine(char const* input, char const*& nextLine);
   Boolean parseSDPLine_s(char const* sdpLine);
+  Boolean parseSDPLine_xmisc(char const* sdpLine);
   Boolean parseSDPLine_i(char const* sdpLine);
   Boolean parseSDPLine_c(char const* sdpLine);
   Boolean parseSDPAttribute_type(char const* sdpLine);
@@ -138,6 +139,8 @@ protected:
   char* fSessionName; // holds s=<session name> value
   char* fSessionDescription; // holds i=<session description> value
   char* fControlPath; // holds optional a=control: string
+public: 
+  char* fxmisc; // holds optional a=x-qt-text-misc: string
 };
 
 
@@ -280,6 +283,7 @@ protected:
   void setAttribute(char const* name, char const* value = NULL, Boolean valueIsHexadecimal = False);
 
   Boolean parseSDPLine_c(char const* sdpLine);
+  Boolean parseSDPLine_xmisc(char const* sdpLine);
   Boolean parseSDPLine_b(char const* sdpLine);
   Boolean parseSDPAttribute_rtpmap(char const* sdpLine);
   Boolean parseSDPAttribute_rtcpmux(char const* sdpLine);

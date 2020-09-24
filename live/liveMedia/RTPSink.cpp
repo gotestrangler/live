@@ -61,7 +61,7 @@ RTPSink::RTPSink(UsageEnvironment& env,
 
   fSeqNo = (u_int16_t)our_random();
   fSSRC = our_random32();
-  fTimestampBase = our_random32();
+  fTimestampBase = our_random32(); 
 
   fTransmissionStatsDB = new RTPTransmissionStatsDB(*this);
 }
@@ -75,9 +75,15 @@ RTPSink::~RTPSink() {
 }
 
 u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
+
+
   // Begin by converting from "struct timeval" units to RTP timestamp units:
   u_int32_t timestampIncrement = (fTimestampFrequency*tv.tv_sec);
   timestampIncrement += (u_int32_t)(fTimestampFrequency*(tv.tv_usec/1000000.0) + 0.5); // note: rounding
+
+  fprintf(stderr, "MultiFramedRTPSink::setTimestamp - presentation time> %lu %lu, %d\n", tv.tv_sec, tv.tv_usec, fTimestampFrequency);
+
+
 
   // Then add this to our 'timestamp base':
   if (fNextTimestampHasBeenPreset) {
@@ -88,6 +94,11 @@ u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
   }
 
   u_int32_t const rtpTimestamp = fTimestampBase + timestampIncrement;
+
+    if(firstTimeStamp == 0){
+    firstTimeStamp = rtpTimestamp;
+    fprintf(stderr, "RTPSink::convertToRTPTimestamp - FIRST TIME CONVERTING TO RTP TIMESTAMP: %lu with base: %lu\n", firstTimeStamp, fTimestampBase);
+  }
 #ifdef DEBUG_TIMESTAMPS
   fprintf(stderr, "fTimestampBase: 0x%08x, tv: %lu.%06ld\n\t=> RTP timestamp: 0x%08x\n",
 	  fTimestampBase, tv.tv_sec, tv.tv_usec, rtpTimestamp);

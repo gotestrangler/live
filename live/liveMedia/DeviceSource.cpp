@@ -76,6 +76,7 @@ DeviceSource::~DeviceSource() {
 }
 
 void DeviceSource::doGetNextFrame() {
+  fprintf(stderr, "\n     DeviceSource::doGetNextFrame()\n");
   // This function is called (by our 'downstream' object) when it asks for new data.
 
   // Note: If, for some reason, the source device stops being readable (e.g., it gets closed), then you do the following:
@@ -134,6 +135,10 @@ void DeviceSource::deliverFrame() {
   }
   gettimeofday(&fPresentationTime, NULL); // If you have a more accurate time - e.g., from an encoder - then use that instead.
   // If the device is *not* a 'live source' (e.g., it comes instead from a file or buffer), then set "fDurationInMicroseconds" here.
+  
+  fprintf(stderr, "DeviceSource::deliverFrame() - time of day-> sec: %lu, usec: %lu\n", fPresentationTime.tv_sec, fPresentationTime.tv_usec);
+
+  
   memmove(fTo, newFrameDataStart, fFrameSize);
 
   // After delivering the data, inform the reader that it is now available:

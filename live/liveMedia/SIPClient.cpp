@@ -903,6 +903,7 @@ unsigned SIPClient::getResponse(char*& responseBuffer,
   if (responseBufferSize == 0) return 0; // just in case...
   responseBuffer[0] = '\0'; // ditto
 
+  fprintf(stderr, "\n     unsigned SIPClient::getResponse\n");
   // Keep reading data from the socket until we see "\r\n\r\n" (except
   // at the start), or until we fill up our buffer.
   // Don't read any more than this.

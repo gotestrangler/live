@@ -67,10 +67,11 @@ MultiFramedRTPSource
 ::MultiFramedRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
 		       unsigned char rtpPayloadFormat,
 		       unsigned rtpTimestampFrequency,
-		       BufferedPacketFactory* packetFactory)
+	         BufferedPacketFactory* packetFactory)
   : RTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency) {
   reset();
   fReorderingBuffer = new ReorderingPacketBuffer(packetFactory);
+  
 
   // Try to use a big receive buffer for RTP:
   increaseReceiveBufferTo(env, RTPgs->socketNum(), 50*1024);
@@ -319,6 +320,23 @@ void MultiFramedRTPSource::networkReadHandler1() {
       fReorderingBuffer->resetHaveSeenFirstPacket();
     }
     unsigned short rtpSeqNo = (unsigned short)(rtpHdr&0xFFFF);
+
+    long newstamp = (unsigned long)rtpTimestamp;
+    long difference = newstamp - ourFirstTimestamp;
+
+    fprintf(stderr, "Har faet ein pakke med timestamp: %lu\n FIRST TIMESTAMP ER FORTSATT: %lu\n som betyr at vi har kommet: %lu i strømmen\n\n",(unsigned long)rtpTimestamp, ourFirstTimestamp, difference);
+
+/*
+    if(difference >= (timestampFrequency()*2)){
+      fprintf(stderr, "Da har det gått to sekunder, shutting down\n\n");
+      exit(0);
+
+    }
+
+*/
+
+
+
     Boolean usableInJitterCalculation
       = packetIsUsableInJitterCalculation((bPacket->data()),
 						  bPacket->dataSize());
@@ -394,6 +412,8 @@ void BufferedPacket
 
 Boolean BufferedPacket::fillInData(RTPInterface& rtpInterface, struct sockaddr_in& fromAddress,
 				   Boolean& packetReadWasIncomplete) {
+
+  fprintf(stderr, "\n     Boolean BufferedPacket::fillInData\n");
   if (!packetReadWasIncomplete) reset();
 
   unsigned const maxBytesToRead = bytesAvailable();

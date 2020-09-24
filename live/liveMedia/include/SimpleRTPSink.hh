@@ -36,12 +36,14 @@ public:
 	    char const* rtpPayloadFormatName,
 	    unsigned numChannels = 1,
 	    Boolean allowMultipleFramesPerPacket = True,
-	    Boolean doNormalMBitRule = True);
+	    Boolean doNormalMBitRule = True, u_int32_t firstTimestamp = 0);
   // "doNormalMBitRule" means: If the medium (i.e., "sdpMediaTypeString") is other than "audio", set the RTP "M" bit
   // on each outgoing packet iff it contains the last (or only) fragment of a frame.
   // Otherwise (i.e., if "doNormalMBitRule" is False, or the medium is "audio"), leave the "M" bit unset.
 
   void setMBitOnNextPacket() { fSetMBitOnNextPacket = True; } // hack for optionally setting the RTP 'M' bit from outside the class
+
+  u_int32_t firstTimestamp;
 
 protected:
   SimpleRTPSink(UsageEnvironment& env, Groupsock* RTPgs,
@@ -51,10 +53,12 @@ protected:
 		char const* rtpPayloadFormatName,
 		unsigned numChannels,
 		Boolean allowMultipleFramesPerPacket,
-		Boolean doNormalMBitRule);
+		Boolean doNormalMBitRule, u_int32_t firstTimestamp);
 	// called only by createNew()
 
   virtual ~SimpleRTPSink();
+
+
 
 protected: // redefined virtual functions
   virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
@@ -66,6 +70,9 @@ protected: // redefined virtual functions
   Boolean frameCanAppearAfterPacketStart(unsigned char const* frameStart,
 					 unsigned numBytesInFrame) const;
   virtual char const* sdpMediaType() const;
+
+  
+
 
 private:
   char const* fSDPMediaTypeString;

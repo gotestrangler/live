@@ -113,6 +113,7 @@ Boolean MediaSession::initializeWithSDP(char const* sdpDescription) {
 
     // Check for various special SDP lines that we understand:
     if (parseSDPLine_s(sdpLine)) continue;
+    if (parseSDPLine_xmisc(sdpLine)) continue;
     if (parseSDPLine_i(sdpLine)) continue;
     if (parseSDPLine_c(sdpLine)) continue;
     if (parseSDPAttribute_control(sdpLine)) continue;
@@ -250,6 +251,7 @@ Boolean MediaSession::initializeWithSDP(char const* sdpDescription) {
 
 Boolean MediaSession::parseSDPLine(char const* inputLine,
 				   char const*& nextLine){
+  
   // Begin by finding the start of the next line (if any):
   nextLine = NULL;
   for (char const* ptr = inputLine; *ptr != '\0'; ++ptr) {
@@ -295,6 +297,21 @@ Boolean MediaSession::parseSDPLine_s(char const* sdpLine) {
   if (sscanf(sdpLine, "s=%[^\r\n]", buffer) == 1) {
     delete[] fSessionName; fSessionName = strDup(buffer);
     parseSuccess = True;
+  }
+  delete[] buffer;
+
+  return parseSuccess;
+}
+
+Boolean MediaSession::parseSDPLine_xmisc(char const* sdpLine) {
+  // Check for "a=x-qt-text-misc" line
+  char* buffer = strDupSize(sdpLine);
+  Boolean parseSuccess = False;
+
+  if (sscanf(sdpLine, "a=x-qt-text-misc:%[^\r\n]", buffer) == 1) {
+    delete[] fxmisc; fxmisc = strDup(buffer);
+    parseSuccess = True;
+    fprintf(stderr, "parseSDPLine_xmisc -> success -> %s\n", fxmisc);
   }
   delete[] buffer;
 
@@ -675,6 +692,8 @@ static Boolean const honorSDPPortChoice
 #endif
 
 Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
+    fprintf(stderr, "           MediaSubsession::initiate\n");
+
   if (fReadSource != NULL) return True; // has already been initiated
 
   do {
@@ -814,7 +833,12 @@ Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
     }
 
     // Create "fRTPSource" and "fReadSource":
-    if (!createSourceObjects(useSpecialRTPoffset)) break;
+    if (!createSourceObjects(useSpecialRTPoffset)){
+
+      break;
+    }else{
+      fprintf(stderr, "         created source objects\n");
+    }
 
     if (fReadSource == NULL) {
       env().setResultMsg("Failed to create read source");
@@ -1181,6 +1205,7 @@ Boolean MediaSubsession::parseSDPAttribute_framerate(char const* sdpLine) {
 }
 
 Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
+  fprintf(stderr, "         MediaSubsession::createSourceObjects: %s\n", fCodecName);
   do {
     // First, check "fProtocolName"
     if (strcmp(fProtocolName, "UDP") == 0) {
@@ -1189,6 +1214,7 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
       fRTPSource = NULL; // Note!
       
       if (strcmp(fCodecName, "MP2T") == 0) { // MPEG-2 Transport Stream
+
 	fReadSource = MPEG2TransportStreamFramer::createNew(env(), fReadSource);
 	// this sets "durationInMicroseconds" correctly, based on the PCR values
       }
@@ -1306,9 +1332,21 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
 					      fRTPPayloadFormat,
 					      fRTPTimestampFrequency);
       } else if (strcmp(fCodecName, "MP2T") == 0) { // MPEG-2 Transport Stream
+
+        fprintf(stderr, "         MediaSubsession::createSourceObjects / simple rtpsource and transportstreamframer: %s\n", fCodecName);
+
 	fRTPSource = SimpleRTPSource::createNew(env(), fRTPSocket, fRTPPayloadFormat,
 						fRTPTimestampFrequency, "video/MP2T",
 						0, False);
+
+  
+  const char * input = fParent.fxmisc;
+  fprintf(stderr, "         MediaSubsession::createSourceObjects SETTING FIRST TIMESTSAMP IN SOURCE OBJECT %s\n", input);
+  char *ptr;
+  long time = strtoul(input, &ptr, 10);
+
+  fprintf(stderr, "         MediaSubsession::createSourceObjects SETTING FIRST TIMESTSAMP IN SOURCE OBJECT %lu\n", time);
+  fRTPSource->setFirstTimeStamp(time);
 	fReadSource = MPEG2TransportStreamFramer::createNew(env(), fRTPSource);
 	// this sets "durationInMicroseconds" correctly, based on the PCR values
       } else if (strcmp(fCodecName, "H261") == 0) { // H.261
