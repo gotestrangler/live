@@ -81,7 +81,6 @@ u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
   u_int32_t timestampIncrement = (fTimestampFrequency*tv.tv_sec);
   timestampIncrement += (u_int32_t)(fTimestampFrequency*(tv.tv_usec/1000000.0) + 0.5); // note: rounding
 
-  fprintf(stderr, "MultiFramedRTPSink::setTimestamp - presentation time> %lu %lu, %d\n", tv.tv_sec, tv.tv_usec, fTimestampFrequency);
 
 
 
@@ -94,6 +93,9 @@ u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
   }
 
   u_int32_t const rtpTimestamp = fTimestampBase + timestampIncrement;
+
+  fprintf(stderr, "MultiFramedRTPSink::setTimestamp - rtptimestamp> %zu\n", rtpTimestamp);
+
 
     if(firstTimeStamp == 0){
     firstTimeStamp = rtpTimestamp;

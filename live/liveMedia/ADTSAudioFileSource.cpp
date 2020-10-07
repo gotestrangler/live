@@ -115,6 +115,7 @@ ADTSAudioFileSource::~ADTSAudioFileSource() {
 // Note: We should change the following to use asynchronous file reading, #####
 // as we now do with ByteStreamFileSource. #####
 void ADTSAudioFileSource::doGetNextFrame() {
+  fprintf(stderr, "\n     ADTSAudioFileSource::getNextFrame 3\n");
   // Begin by reading the 7-byte fixed_variable headers:
   unsigned char headers[7];
   if (fread(headers, 1, sizeof headers, fFid) < sizeof headers

@@ -98,6 +98,7 @@ Boolean DVVideoStreamFramer::isDVVideoStreamFramer() const {
 }
 
 void DVVideoStreamFramer::doGetNextFrame() {
+  fprintf(stderr, "\n     DeviceSource::doGetNextFrame()\n");
   fFrameSize = 0; // initially, until we deliver data
 
   // If we have saved initial blocks (and won't be seeking back to re-read this data), so use this data first.

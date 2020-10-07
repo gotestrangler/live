@@ -142,6 +142,7 @@ MPEG2IFrameIndexFromTransportStream::~MPEG2IFrameIndexFromTransportStream() {
 }
 
 void MPEG2IFrameIndexFromTransportStream::doGetNextFrame() {
+  fprintf(stderr, "\n     MPEG2IFrameIndexFromTransportStream::doGetNextFrame()\n");
   // Begin by trying to deliver an index record (for an already-parsed frame)
   // to the client:
   if (deliverIndexRecord()) return;

@@ -117,6 +117,7 @@ void MultiFramedRTPSource::doStopGettingFrames() {
 }
 
 void MultiFramedRTPSource::doGetNextFrame() {
+  fprintf(stderr, "\n     H264or5Fragmenter::doGetNextFrame()\n");
   if (!fAreDoingNetworkReads) {
     // Turn on background read handling of incoming packets:
     fAreDoingNetworkReads = True;

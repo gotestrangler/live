@@ -43,6 +43,7 @@ MPEG2TransportStreamAccumulator::~MPEG2TransportStreamAccumulator() {
 }
 
 void MPEG2TransportStreamAccumulator::doGetNextFrame() {
+  fprintf(stderr, "\n     MPEG2TransportStreamAccumulator::doGetNextFrame()\n");
   if (fNumBytesGathered >= fDesiredPacketSize) {
     // Complete the delivery to the client:
     fFrameSize = fNumBytesGathered;

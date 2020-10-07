@@ -211,6 +211,9 @@ void MultiFramedRTPSink::buildAndSendPacket(Boolean isFirstPacket) {
 }
 
 void MultiFramedRTPSink::packFrame() {
+
+  fprintf(stderr, "MultiFramedRTPSink::packFrame()\n");
+
   // Get the next frame.
 
   // First, skip over the space we'll use for any frame-specific header:
@@ -251,7 +254,7 @@ void MultiFramedRTPSink
 		     struct timeval presentationTime,
 		     unsigned durationInMicroseconds) {
   
-  //fprintf(stderr, "MultiFramedRTPSink::afterGettingFrame1\n");
+  fprintf(stderr, "MultiFramedRTPSink::afterGettingFrame1\n");
 
   if (fIsFirstPacket) {
     // Record the fact that we're starting to play now:
@@ -377,7 +380,7 @@ Boolean MultiFramedRTPSink::isTooBigForAPacket(unsigned numBytes) const {
 }
 
 void MultiFramedRTPSink::sendPacketIfNecessary() {
-  //fprintf(stderr, "\n     sendPacketIfNecessary()\n");
+  fprintf(stderr, "\n     sendPacketIfNecessary()\n");
   if (fNumFramesUsedSoFar > 0) {
     // Send the packet:
 #ifdef TEST_LOSS
@@ -412,6 +415,8 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
   fNumFramesUsedSoFar = 0;
 
   if (fNoFramesLeft) {
+      fprintf(stderr, "\n     sendPacketIfNecessary() -> fNoFramesLeft\n");
+
     
     // We're done:
     onSourceClosure();
@@ -440,6 +445,8 @@ void MultiFramedRTPSink::sendNext(void* firstArg) {
 }
 
 void MultiFramedRTPSink::ourHandleClosure(void* clientData) {
+        fprintf(stderr, "\n     MultiFramedRTPSink::ourHandleClosure\n");
+
   MultiFramedRTPSink* sink = (MultiFramedRTPSink*)clientData;
   // There are no frames left, but we may have a partially built packet
   //  to send

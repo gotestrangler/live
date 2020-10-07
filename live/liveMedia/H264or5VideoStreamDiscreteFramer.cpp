@@ -35,6 +35,7 @@ H264or5VideoStreamDiscreteFramer::~H264or5VideoStreamDiscreteFramer() {
 }
 
 void H264or5VideoStreamDiscreteFramer::doGetNextFrame() {
+  fprintf(stderr, "\n     H264or5Fragmenter::doGetNextFrame()\n");
   if (fIncludeStartCodeInOutput) {
     // Prepend a 4-byte 'start code' (0x00000001) to the output:
     if (fMaxSize < 4) {  // there's no space

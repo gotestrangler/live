@@ -43,6 +43,7 @@ BasicUDPSource::~BasicUDPSource(){
 }
 
 void BasicUDPSource::doGetNextFrame() {
+  fprintf(stderr, "\n    BasicUDPSource::getNextFrame 3\n");
   if (!fHaveStartedReading) {
     // Await incoming packets:
     envir().taskScheduler().turnOnBackgroundReadHandling(fInputGS->socketNum(),

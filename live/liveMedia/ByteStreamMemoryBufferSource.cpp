@@ -70,6 +70,7 @@ void ByteStreamMemoryBufferSource::seekToByteRelative(int64_t offset, u_int64_t 
 }
 
 void ByteStreamMemoryBufferSource::doGetNextFrame() {
+  fprintf(stderr, "ByteStreamMemoryBufferSourcee::doGetNextFrame()\n");
   if (fCurIndex >= fBufferSize || (fLimitNumBytesToStream && fNumBytesToStream == 0)) {
     handleClosure();
     return;

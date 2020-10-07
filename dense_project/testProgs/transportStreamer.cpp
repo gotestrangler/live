@@ -22,8 +22,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "BasicUsageEnvironment.hh"
 #include "GroupsockHelper.hh"
 #include <../liveMedia/include/RTSPDenseServer.hh>
+
 #include <stdio.h>
 #include <string.h>
+#include <InputFile.hh>
+
+
+
+
 
 // To stream using "source-specific multicast" (SSM), uncomment the following:
 //#define USE_SSM 1
@@ -48,6 +54,7 @@ RTPSink* videoSink;
 
 void play(); // forward
 void strip(char* str); //forward
+char * strip2(char* str); //forward
 
 int main(int argc, char** argv) {
   // Begin by setting up our usage environment:
@@ -105,21 +112,19 @@ int main(int argc, char** argv) {
 
 */
 
-
-  char* line = NULL;
-  size_t len = 0;
-  int line_num = 0;
-  while (getline(&line, &len, stdin) != -1)
-  {
-      strip(line);
-      if (line_num % 2 == 0)
-          printf("[%d]: %s\n", line_num, line);
-      line_num++;
-  }
-
+/*
+    FILE* inFile = OpenInputFile(*env, argv[1]);;
+    size_t sum = 0;
+    size_t x;
+    char* line; 
+    sum = getline(&line, &x, inFile);
+    *env << "Read line from manifest: " << line << "\n";
+    
+ exit(0);
+*/
 
 ServerMediaSession* sms
-    = ServerMediaSession::createNew(*env, "testStream", argv[1],
+    = ServerMediaSession::createNew(*env, "testStream", "../extras/chunks/manifes.m3u8",
 		   "Session streamed by \"testMPEG2TransportStreamer\"", isSSM, "Hei hei hei gote\n");
   
   
@@ -179,6 +184,45 @@ void strip(char* str)
     {
       str[len - 1] = '\0';
     }
+}
+
+char * strip2(char* str)
+{
+
+
+  int len;
+
+  len = strlen(str);
+  int en;
+  int to;
+  Boolean satten = false; 
+  Boolean satto = false;
+ for(int i = 0; i < len; i++){
+   if (str[i] == '"'){
+     if(!satten){
+        en = i + 1; 
+        printf("Fant enern på plass %d\n", en);
+        satten = true; 
+     }else{
+        to = i; 
+        printf("Fant toern på plass %d\n", to);
+        satto = true; 
+     }
+    
+
+   }
+
+ }
+
+ char* ny = new char[(to - en) + 1];
+ int teller = 0; 
+ for(int y = en; y < to; y++){
+   ny[teller++] = str[y]; 
+ }
+ ny[(to - en) + 1] = '\0';
+
+ return ny;
+
 }
 
 

@@ -54,6 +54,7 @@ Boolean WindowsAudioInputDevice_common::initialSetInputPort(int portIndex) {
 }
 
 void WindowsAudioInputDevice_common::doGetNextFrame() {
+  fprintf(stderr, "\n     DeviceSource::doGetNextFrame()\n");
   if (!fHaveStarted) {
     // Before reading the first audio data, flush any existing data:
     while (readHead != NULL) releaseHeadBuffer();

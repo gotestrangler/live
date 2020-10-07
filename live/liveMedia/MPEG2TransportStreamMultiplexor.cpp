@@ -47,6 +47,7 @@ MPEG2TransportStreamMultiplexor::~MPEG2TransportStreamMultiplexor() {
 }
 
 void MPEG2TransportStreamMultiplexor::doGetNextFrame() {
+  fprintf(stderr, "\n     MPEG2TransportStreamMultiplexor::doGetNextFrame()\n");
   if (fInputBufferBytesUsed >= fInputBufferSize) {
     // No more bytes are available from the current buffer.
     // Arrange to read a new one.

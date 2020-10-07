@@ -120,6 +120,7 @@ void AC3AudioStreamFramer::flushInput() {
 }
 
 void AC3AudioStreamFramer::doGetNextFrame() {
+  fprintf(stderr, "\n     AC3AudioStreamFramer::getNextFrame 3\n");
   fParser->registerReadInterest(fTo, fMaxSize);
   parseNextFrame();
 }

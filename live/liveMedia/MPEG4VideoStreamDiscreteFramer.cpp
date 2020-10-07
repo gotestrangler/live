@@ -44,6 +44,7 @@ MPEG4VideoStreamDiscreteFramer::~MPEG4VideoStreamDiscreteFramer() {
 }
 
 void MPEG4VideoStreamDiscreteFramer::doGetNextFrame() {
+  fprintf(stderr, "\n     MPEG4VideoStreamDiscreteFramer::doGetNextFrame()\n");
   // Arrange to read data (which should be a complete MPEG-4 video frame)
   // from our data source, directly into the client's input buffer.
   // After reading this, we'll do some parsing on the frame.

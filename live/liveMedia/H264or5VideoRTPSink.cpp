@@ -174,6 +174,7 @@ H264or5Fragmenter::~H264or5Fragmenter() {
 }
 
 void H264or5Fragmenter::doGetNextFrame() {
+  fprintf(stderr, "\n     H264or5Fragmenter::doGetNextFrame()\n");
   if (fNumValidDataBytes == 1) {
     // We have no NAL unit data currently in the buffer.  Read a new one:
     fInputSource->getNextFrame(&fInputBuffer[1], fInputBufferSize - 1,

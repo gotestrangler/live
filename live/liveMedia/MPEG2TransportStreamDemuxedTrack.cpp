@@ -30,5 +30,6 @@ MPEG2TransportStreamDemuxedTrack::~MPEG2TransportStreamDemuxedTrack() {
 }
 
 void MPEG2TransportStreamDemuxedTrack::doGetNextFrame() {
+  fprintf(stderr, "\n     MPEG2TransportStreamDemuxedTrack::doGetNextFrame()\n");
   fOurParser.continueParsing();
 }

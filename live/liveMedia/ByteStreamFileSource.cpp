@@ -94,6 +94,9 @@ ByteStreamFileSource::~ByteStreamFileSource() {
 }
 
 void ByteStreamFileSource::doGetNextFrame() {
+
+  fprintf(stderr, "ByteStreamFileSource::doGetNextFrame()\n");
+
   if (feof(fFid) || ferror(fFid) || (fLimitNumBytesToStream && fNumBytesToStream == 0)) {
     handleClosure();
     return;
@@ -160,7 +163,8 @@ void ByteStreamFileSource::doReadFromFile() {
 
   // Set the 'presentation time':
   if (fPlayTimePerFrame > 0 && fPreferredFrameSize > 0) {
-      fprintf(stderr, "BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM> %lu %lu, %d\n", fPresentationTime.tv_sec, fPresentationTime.tv_usec, fFrameSize);
+    fprintf(stderr, "BOOm %lu\n", fPlayTimePerFrame);
+
 
     if (fPresentationTime.tv_sec == 0 && fPresentationTime.tv_usec == 0) {
       // This is the first frame, so use the current time:
@@ -170,22 +174,24 @@ void ByteStreamFileSource::doReadFromFile() {
 
     } else {
 
+
       // Increment by the play time of the previous data:
       unsigned uSeconds	= fPresentationTime.tv_usec + fLastPlayTime;
       fPresentationTime.tv_sec += uSeconds/1000000;
       fPresentationTime.tv_usec = uSeconds%1000000;
+
     }
 
     // Remember the play time of this data:
     fLastPlayTime = (fPlayTimePerFrame*fFrameSize)/fPreferredFrameSize;
     fDurationInMicroseconds = fLastPlayTime;
+
+
   } else {
     // We don't know a specific play time duration for this data,
     // so just record the current time as being the 'presentation time':
     gettimeofday(&fPresentationTime, NULL);
   
-      fprintf(stderr, "hallo hallo hallo hallo hallo halo hallo - presentation time> %lu %lu, %d, %d, %d, %d\n", fPresentationTime.tv_sec, fPresentationTime.tv_usec, fFrameSize, fDurationInMicroseconds, fPreferredFrameSize, fPlayTimePerFrame);
-
   }
 
   // Inform the reader that he has data:

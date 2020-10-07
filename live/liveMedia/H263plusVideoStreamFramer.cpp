@@ -64,6 +64,7 @@ H263plusVideoStreamFramer::~H263plusVideoStreamFramer()
 ///////////////////////////////////////////////////////////////////////////////
 void H263plusVideoStreamFramer::doGetNextFrame()
 {
+   fprintf(stderr, "\n     H263plusVideoStreamFramer\n");
   fParser->registerReadInterest(fTo, fMaxSize);
   continueReadProcessing();
 }

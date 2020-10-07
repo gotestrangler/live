@@ -102,6 +102,8 @@ void MPEG2TransportStreamFramer::setPCRLimit(float pcrLimit) {
 }
 
 void MPEG2TransportStreamFramer::doGetNextFrame() {
+  fprintf(stderr, "MPEG2TransportStreamFramer::doGetNextFrame()\n");
+
   if (fLimitNumTSPacketsToStream) {
     if (fNumTSPacketsToStream == 0) {
       handleClosure();
@@ -112,11 +114,16 @@ void MPEG2TransportStreamFramer::doGetNextFrame() {
     }
   }
 
+  fprintf(stderr, "MPEG2TransportStreamFramer::doGetNextFrame() 1\n");
+
   // Read directly from our input source into our client's buffer:
   fFrameSize = 0;
   fInputSource->getNextFrame(fTo, fMaxSize,
 			     afterGettingFrame, this,
 			     FramedSource::handleClosure, this);
+  
+  fprintf(stderr, "MPEG2TransportStreamFramer::doGetNextFrame() 2\n");
+
 }
 
 void MPEG2TransportStreamFramer::doStopGettingFrames() {

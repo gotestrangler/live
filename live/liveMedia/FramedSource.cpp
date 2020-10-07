@@ -57,7 +57,8 @@ void FramedSource::getNextFrame(unsigned char* to, unsigned maxSize,
 				onCloseFunc* onCloseFunc,
 				void* onCloseClientData) {
 
-          //fprintf(stderr, "\n     FramedSource::getNextFrame\n");
+  
+  fprintf(stderr, "\n     FramedSource::getNextFrame\n");
         
   // Make sure we're not already being read:
   if (fIsCurrentlyAwaitingData) {
@@ -75,6 +76,10 @@ void FramedSource::getNextFrame(unsigned char* to, unsigned maxSize,
   fOnCloseClientData = onCloseClientData;
   fIsCurrentlyAwaitingData = True;
 
+
+    fprintf(stderr, "\n     FramedSource::getNextFrame 3\n");
+
+  //doStopGettingFrames();
   doGetNextFrame();
 }
 

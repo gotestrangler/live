@@ -68,6 +68,7 @@ Boolean MPEG2TransportStreamTrickModeFilter::seekTo(unsigned long tsPacketNumber
 #define isNonIFrameStart(type) ((type) == 0x83 || (type) == 0x88/*for H.264*/ || (type) == 0x8E/*for H.265*/)
 
 void MPEG2TransportStreamTrickModeFilter::doGetNextFrame() {
+  fprintf(stderr, "\n     MPEG2TransportStreamTrickModeFilterr::doGetNextFrame()\n");
   //  fprintf(stderr, "#####DGNF1\n");
   // If our client's buffer size is too small, then deliver
   // a 0-byte 'frame', to tell it to process all of the data that it has

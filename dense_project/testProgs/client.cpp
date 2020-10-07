@@ -253,7 +253,7 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
     // (This will prepare the data sink to receive data; the actual flow of data from the client won't start happening until later,
     // after we've sent a RTSP "PLAY" command.)
 
-      char const* recievedTS = "DAREYOUTOMOVE.ts"; 
+      char const* recievedTS = "net.ts"; 
       // Create the data sink for 'stdout':
       scs.subsession->sink = FileSink::createNew(rtspClient->envir(), recievedTS);
 

@@ -114,6 +114,7 @@ static unsigned short const frameSizeWideband[16] = {
 // Note: We should change the following to use asynchronous file reading, #####
 // as we now do with ByteStreamFileSource. #####
 void AMRAudioFileSource::doGetNextFrame() {
+  fprintf(stderr, "\n    AMRAudioFileSource::getNextFrame 3\n");
   if (feof(fFid) || ferror(fFid)) {
     handleClosure();
     return;

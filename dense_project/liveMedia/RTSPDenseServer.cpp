@@ -15,6 +15,7 @@
 #include "ByteStreamFileSource.hh"
 #include "Groupsock.hh"
 #include <string>
+#include "InputFile.hh"
 
 
 
@@ -164,18 +165,20 @@ void RTSPDenseServer::make(ServerMediaSession *session, int number){
         //fprintf(stderr, "       finsihed addservermediaession\n");
 
         //char const* inputFileName = (char const*)filenames->Lookup((char const*)number);
-        char const* inputFileName = "../extras/mix.ts";
+        
 
         unsigned const inputDataChunkSize
         = TRANSPORT_PACKETS_PER_NETWORK_PACKET*TRANSPORT_PACKET_SIZE;
 
-        fprintf(stderr, "/////////////// YOUR MAKE 3 /////////////\n");
+        fprintf(stderr, "/////////////// YOUR MAKE 3 ///////////// : %s\n", session->streamFile());
+        
+        
+        firstsesh->fileSource = CheckSource::createNew(envir(), session->streamFile(), inputDataChunkSize);
 
-        firstsesh->fileSource = ByteStreamFileSource::createNew(envir(), inputFileName, inputDataChunkSize);
-
+   
         
         if (firstsesh->fileSource == NULL) {
-          envir() << "Unable to open file \"" << inputFileName
+          envir() << "Unable to open file \"" << session->streamFile()
               << "\" as a byte-stream file source\n";
           exit(1);
         }
@@ -242,7 +245,7 @@ RTSPDenseServer::DenseSession*
 RTSPDenseServer::createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, SimpleRTPSink* videoSink, RTCPInstance* rtcp, 
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
-        ByteStreamFileSource* fileSource,
+        CheckSource* fileSource, 
         MPEG2TransportStreamFramer* videoSource) {
 
   fprintf(stderr, "creTING NEW DENSE SESSION:\n" );
@@ -788,7 +791,7 @@ void RTSPDenseServer::RTSPDenseClientConnection::handleRequestBytes(int newBytes
 
 void RTSPDenseServer::afterPlaying1(void* /*clientData*/) {
 
-  fprintf(stderr, "AFTER PLAYING!");
+  fprintf(stderr, "AFTER PLAYING!\n");
 
   videoSink1->stopPlaying();
   Medium::close(videoSource1);

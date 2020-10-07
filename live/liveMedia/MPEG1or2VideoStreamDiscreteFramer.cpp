@@ -52,6 +52,7 @@ MPEG1or2VideoStreamDiscreteFramer::~MPEG1or2VideoStreamDiscreteFramer() {
 }
 
 void MPEG1or2VideoStreamDiscreteFramer::doGetNextFrame() {
+  fprintf(stderr, "\n    MPEG1or2VideoStreamDiscreteFramer::doGetNextFrame()\n");
   // Arrange to read data (which should be a complete MPEG-1 or 2 video frame)
   // from our data source, directly into the client's input buffer.
   // After reading this, we'll do some parsing on the frame.

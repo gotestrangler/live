@@ -53,6 +53,7 @@ public:
       // Note: The caller is responsible for freeing the returned string
 
   char const* streamName() const { return fStreamName; }
+  char const* streamFile() const { return fInfoSDPString; }
 
   Boolean addTimestamp(char const * timestamp);
 

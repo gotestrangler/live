@@ -24,6 +24,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 FILE* OpenInputFile(UsageEnvironment& env, char const* fileName) {
   FILE* fid;
 
+    fprintf(stderr, "FILE* OpenInputFile: %s\n", fileName);
+
+
   // Check for a special case file name: "stdin"
   if (strcmp(fileName, "stdin") == 0) {
     fid = stdin;

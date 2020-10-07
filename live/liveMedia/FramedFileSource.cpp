@@ -24,6 +24,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 FramedFileSource::FramedFileSource(UsageEnvironment& env, FILE* fid)
   : FramedSource(env), fFid(fid) {
+    
+
 }
 
 FramedFileSource::~FramedFileSource() {
