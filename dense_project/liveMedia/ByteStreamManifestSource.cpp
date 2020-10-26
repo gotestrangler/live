@@ -83,8 +83,8 @@ void ByteStreamManifestSource::stripChunks(){
 
     int sum = 0;
     int ant = 0;
-    size_t x;
-    char* line; 
+    size_t x = 0;
+    char* line = NULL; 
 
     getline(&line, &x, fFid);
     fprintf(stderr, "ByteStreamManifestSource::stripChunks() -> line is %s, line[0] is %c\n", line, line[0]);

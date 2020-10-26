@@ -14,7 +14,7 @@
 #include "MPEG2TransportStreamFramer.hh"
 #include "SimpleRTPSink.hh"
 #include "../liveMedia/include/ByteStreamManifestSource.hh"
-#include "../liveMedia/include/CheckSource.hh"
+#include "../liveMedia/include/ManifestRTPSink.hh"
 
 
 #define TRANSPORT_PACKET_SIZE 188
@@ -83,7 +83,7 @@ class RTSPDenseServer: public RTSPServer {
     public: 
     class DenseSession{
         public: 
-        DenseSession(Groupsock* rtpG, Groupsock* rtcpG, SimpleRTPSink* videoSink, RTCPInstance* rtcp, 
+        DenseSession(Groupsock* rtpG, Groupsock* rtcpG, ManifestRTPSink* videoSink, RTCPInstance* rtcp, 
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         CheckSource* fileSource, 
@@ -103,7 +103,7 @@ class RTSPDenseServer: public RTSPServer {
         Groupsock * rtcpGroupsock;
 
         //RTP 
-        SimpleRTPSink* videoSink;
+        ManifestRTPSink* videoSink;
 
         //RTCP
         RTCPInstance* rtcp;
@@ -119,7 +119,7 @@ class RTSPDenseServer: public RTSPServer {
         MPEG2TransportStreamFramer* videoSource;
     };
 
-    DenseSession* createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, SimpleRTPSink* videoSink, RTCPInstance* rtcp, 
+    DenseSession* createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, ManifestRTPSink* videoSink, RTCPInstance* rtcp, 
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         CheckSource* fileSource,

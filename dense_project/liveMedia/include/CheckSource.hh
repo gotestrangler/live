@@ -46,6 +46,8 @@ public:
   void seekToByteRelative(int64_t offset, u_int64_t numBytesToStream = 0);
   void seekToEnd(); // to force EOF handling on the next read
 
+  int getNowChunk(){return curChunk;}
+
 protected:
   CheckSource(UsageEnvironment& env,
 		       FILE* fid,
@@ -57,6 +59,7 @@ protected:
 
   void stripPath(char const* fileName);
   void stripChunks();
+ 
 
   static void fileReadableHandler(CheckSource* source, int mask);
   void doReadFromFile();

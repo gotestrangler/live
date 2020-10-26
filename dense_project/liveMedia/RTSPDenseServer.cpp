@@ -21,7 +21,8 @@
 
 
 MPEG2TransportStreamFramer* videoSource1;
-SimpleRTPSink* videoSink1;
+//SimpleRTPSink* videoSink1;
+ManifestRTPSink* videoSink1;
 HashTable* commonDenseTable;
 
 
@@ -124,7 +125,8 @@ void RTSPDenseServer::make(ServerMediaSession *session, int number){
         // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
         OutPacketBuffer::maxSize = 100000;
         //RTPSink* videoSink;
-        firstsesh->videoSink = SimpleRTPSink::createNew(env, firstsesh->rtpGroupsock, 96, 90000, "video", "MP2T", 1, True, False);
+        //firstsesh->videoSink = SimpleRTPSink::createNew(env, firstsesh->rtpGroupsock, 96, 90000, "video", "MP2T", 1, True, False);
+        firstsesh->videoSink = ManifestRTPSink::createNew(env, firstsesh->rtpGroupsock, 96, 90000, "video", "MP2T", 1, True, False);
 
         u_int32_t sinkbase =  firstsesh->videoSink->getBase(); 
         unsigned char sinkfreq = firstsesh->videoSink->getFreq();
@@ -175,7 +177,7 @@ void RTSPDenseServer::make(ServerMediaSession *session, int number){
         
         firstsesh->fileSource = CheckSource::createNew(envir(), session->streamFile(), inputDataChunkSize);
 
-   
+        firstsesh->videoSink->setCheckSource(firstsesh->fileSource);
         
         if (firstsesh->fileSource == NULL) {
           envir() << "Unable to open file \"" << session->streamFile()
@@ -242,7 +244,7 @@ void RTSPDenseServer::DenseSession::setRTCPGSock(UsageEnvironment &env, in_addr 
 
 
 RTSPDenseServer::DenseSession*
-RTSPDenseServer::createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, SimpleRTPSink* videoSink, RTCPInstance* rtcp, 
+RTSPDenseServer::createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, ManifestRTPSink* videoSink, RTCPInstance* rtcp, 
         PassiveServerMediaSubsession* passiveSession,
         ServerMediaSession* denseSession,
         CheckSource* fileSource, 

@@ -32,6 +32,14 @@ public:
   virtual ~ReorderingPacketBuffer();
   void reset();
 
+
+  //I made these: 
+  BufferedPacket* getLastCompletedPacket();
+  BufferedPacket* getHead(){return fHeadPacket;}
+  BufferedPacket* getTail(){return fTailPacket;}
+  unsigned short getChunk(){return curChunk;}
+  void setChunk(unsigned short in){curChunk = in;}
+
   BufferedPacket* getFreePacket(MultiFramedRTPSource* ourSource);
   Boolean storePacket(BufferedPacket* bPacket);
   BufferedPacket* getNextCompletedPacket(Boolean& packetLossPreceded);
@@ -58,6 +66,7 @@ private:
   BufferedPacket* fSavedPacket;
       // to avoid calling new/free in the common case
   Boolean fSavedPacketFree;
+  unsigned short curChunk;
 };
 
 
@@ -117,7 +126,7 @@ void MultiFramedRTPSource::doStopGettingFrames() {
 }
 
 void MultiFramedRTPSource::doGetNextFrame() {
-  fprintf(stderr, "\n     H264or5Fragmenter::doGetNextFrame()\n");
+  fprintf(stderr, "\n     MultiFramedRTPSource::doGetNextFrame()\n");
   if (!fAreDoingNetworkReads) {
     // Turn on background read handling of incoming packets:
     fAreDoingNetworkReads = True;
@@ -130,10 +139,117 @@ void MultiFramedRTPSource::doGetNextFrame() {
   fSavedMaxSize = fMaxSize;
   fFrameSize = 0; // for now
   fNeedDelivery = True;
-  doGetNextFrame1();
+  doGetNextFrame2();
 }
 
 void MultiFramedRTPSource::doGetNextFrame1() {
+
+  while (fNeedDelivery) {
+    // If we already have packet data available, then deliver it now.
+    Boolean packetLossPrecededThis;
+    BufferedPacket* nextPacket
+      = fReorderingBuffer->getLastCompletedPacket();
+    if (nextPacket == NULL) break;
+
+    fNeedDelivery = False;
+
+    if (nextPacket->useCount() == 0) {
+      // Before using the packet, check whether it has a special header
+      // that needs to be processed:
+      unsigned specialHeaderSize;
+      if (!processSpecialHeader(nextPacket, specialHeaderSize)) {
+	// Something's wrong with the header; reject the packet:
+	fReorderingBuffer->releaseUsedPacket(nextPacket);
+	fNeedDelivery = True;
+	continue;
+      }
+      nextPacket->skip(specialHeaderSize);
+    }
+
+    // Check whether we're part of a multi-packet frame, and whether
+    // there was packet loss that would render this packet unusable:
+    if (fCurrentPacketBeginsFrame) {
+      if (packetLossPrecededThis || fPacketLossInFragmentedFrame) {
+	// We didn't get all of the previous frame.
+	// Forget any data that we used from it:
+	fTo = fSavedTo; fMaxSize = fSavedMaxSize;
+	fFrameSize = 0;
+      }
+      fPacketLossInFragmentedFrame = False;
+    } else if (packetLossPrecededThis) {
+      // We're in a multi-packet frame, with preceding packet loss
+      fPacketLossInFragmentedFrame = True;
+    }
+    if (fPacketLossInFragmentedFrame) {
+      // This packet is unusable; reject it:
+      fReorderingBuffer->releaseUsedPacket(nextPacket);
+      fNeedDelivery = True;
+      continue;
+    }
+
+ unsigned short frek = fReorderingBuffer->getChunk();
+ unsigned frameSize;
+ int gunna = 0; 
+    if(nextPacket->nowChunk() != frek){
+      // The packet is usable. Deliver all or part of it to our caller:
+      while(nextPacket != NULL){
+      fprintf(stderr, "\n     in the while loop. gunna is %d\n", gunna++);
+
+      nextPacket->use(fTo, fMaxSize, frameSize, fNumTruncatedBytes,
+          fCurPacketRTPSeqNum, fCurPacketRTPTimestamp,
+          fPresentationTime, fCurPacketHasBeenSynchronizedUsingRTCP,
+          fCurPacketMarkerBit);
+      fFrameSize += frameSize;
+      if (!nextPacket->hasUsableData()) {
+        // We're completely done with this packet now
+        fReorderingBuffer->releaseUsedPacket(nextPacket);
+      }
+      nextPacket = fReorderingBuffer->getLastCompletedPacket();    
+
+
+
+      }
+    }
+
+
+    if (fCurrentPacketCompletesFrame && fFrameSize > 0) {
+        fprintf(stderr, "\n     fCurrentPacketCompletesFrame && fFrameSize > 0\n");
+
+      // We have all the data that the client wants.
+      if (fNumTruncatedBytes > 0) {
+	envir() << "MultiFramedRTPSource::doGetNextFrame1(): The total received frame size exceeds the client's buffer size ("
+		<< fSavedMaxSize << ").  "
+		<< fNumTruncatedBytes << " bytes of trailing data will be dropped!\n";
+      }
+      // Call our own 'after getting' function, so that the downstream object can consume the data:
+      if (fReorderingBuffer->isEmpty()) {
+      fprintf(stderr, "\n     buffer is empty\n");
+
+	// Common case optimization: There are no more queued incoming packets, so this code will not get
+	// executed again without having first returned to the event loop.  Call our 'after getting' function
+	// directly, because there's no risk of a long chain of recursion (and thus stack overflow):
+	afterGetting(this);
+      } else {
+        fprintf(stderr, "\n     setting next task afterGetting\n");
+
+	// Special case: Call our 'after getting' function via the event loop.
+	nextTask() = envir().taskScheduler().scheduleDelayedTask(0,
+								 (TaskFunc*)FramedSource::afterGetting, this);
+      }
+    } else {
+      fprintf(stderr, "\n     keep getting data\n");
+
+      // This packet contained fragmented data, and does not complete
+      // the data that the client wants.  Keep getting data:
+      fTo += frameSize; fMaxSize -= frameSize;
+      fNeedDelivery = True;
+    }
+  }
+}
+
+
+
+void MultiFramedRTPSource::doGetNextFrame2() {
   while (fNeedDelivery) {
     // If we already have packet data available, then deliver it now.
     Boolean packetLossPrecededThis;
@@ -177,6 +293,12 @@ void MultiFramedRTPSource::doGetNextFrame1() {
       continue;
     }
 
+
+    if(packetLossPrecededThis){
+      FramedSource::setPacketLossNotice();
+    }
+
+
     // The packet is usable. Deliver all or part of it to our caller:
     unsigned frameSize;
     nextPacket->use(fTo, fMaxSize, frameSize, fNumTruncatedBytes,
@@ -191,6 +313,8 @@ void MultiFramedRTPSource::doGetNextFrame1() {
     }
 
     if (fCurrentPacketCompletesFrame && fFrameSize > 0) {
+        fprintf(stderr, "\n     fCurrentPacketCompletesFrame && fFrameSize > 0\n");
+
       // We have all the data that the client wants.
       if (fNumTruncatedBytes > 0) {
 	envir() << "MultiFramedRTPSource::doGetNextFrame1(): The total received frame size exceeds the client's buffer size ("
@@ -199,16 +323,22 @@ void MultiFramedRTPSource::doGetNextFrame1() {
       }
       // Call our own 'after getting' function, so that the downstream object can consume the data:
       if (fReorderingBuffer->isEmpty()) {
+      fprintf(stderr, "\n     buffer is empty\n");
+
 	// Common case optimization: There are no more queued incoming packets, so this code will not get
 	// executed again without having first returned to the event loop.  Call our 'after getting' function
 	// directly, because there's no risk of a long chain of recursion (and thus stack overflow):
 	afterGetting(this);
       } else {
+        fprintf(stderr, "\n     setting next task afterGetting\n");
+
 	// Special case: Call our 'after getting' function via the event loop.
 	nextTask() = envir().taskScheduler().scheduleDelayedTask(0,
 								 (TaskFunc*)FramedSource::afterGetting, this);
       }
     } else {
+      fprintf(stderr, "\n     keep getting data\n");
+
       // This packet contained fragmented data, and does not complete
       // the data that the client wants.  Keep getting data:
       fTo += frameSize; fMaxSize -= frameSize;
@@ -216,6 +346,7 @@ void MultiFramedRTPSource::doGetNextFrame1() {
     }
   }
 }
+
 
 void MultiFramedRTPSource
 ::setPacketReorderingThresholdTime(unsigned uSeconds) {
@@ -229,6 +360,8 @@ void MultiFramedRTPSource::networkReadHandler(MultiFramedRTPSource* source, int 
 }
 
 void MultiFramedRTPSource::networkReadHandler1() {
+
+  unsigned chunkY;
   
   BufferedPacket* bPacket = fPacketReadInProgress;
   if (bPacket == NULL) {
@@ -297,11 +430,42 @@ void MultiFramedRTPSource::networkReadHandler1() {
 
     // Check for (& ignore) any RTP header extension
     if (rtpHdr&0x10000000) {
-      if (bPacket->dataSize() < 4) break;
+
+      fprintf(stderr, "The X bit is set, which means that this contains an exthdr\n");
+
+
+
+
+
+
+      if (bPacket->dataSize() < 4){
+        break;
+      } 
+
+
       unsigned extHdr = ntohl(*(u_int32_t*)(bPacket->data())); ADVANCE(4);
       unsigned remExtSize = 4*(extHdr&0xFFFF);
-      if (bPacket->dataSize() < remExtSize) break;
+      fprintf(stderr, "\n -> the exthedrsize: %u\n", remExtSize);
+
+      chunkY = extHdr>>16;
+      FramedSource::setCurChunk(chunkY);
+      //fCurChunk = chunkY;
+      fprintf(stderr, "\n\n\nChunky right now: %u -> the exthedrsize: %u\n", chunkY, remExtSize);
+
+      if (bPacket->dataSize() < remExtSize){
+        break;
+      } 
       ADVANCE(remExtSize);
+
+
+
+
+
+
+
+
+
+
     }
 
     // Discard any padding bytes:
@@ -327,14 +491,6 @@ void MultiFramedRTPSource::networkReadHandler1() {
 
     fprintf(stderr, "Har faet ein pakke med timestamp: %lu\n FIRST TIMESTAMP ER FORTSATT: %lu\n som betyr at vi har kommet: %lu i strømmen\n\n",(unsigned long)rtpTimestamp, ourFirstTimestamp, difference);
 
-/*
-    if(difference >= (timestampFrequency()*2)){
-      fprintf(stderr, "Da har det gått to sekunder, shutting down\n\n");
-      exit(0);
-
-    }
-
-*/
 
 
 
@@ -354,14 +510,14 @@ void MultiFramedRTPSource::networkReadHandler1() {
     gettimeofday(&timeNow, NULL);
     bPacket->assignMiscParams(rtpSeqNo, rtpTimestamp, presentationTime,
 			      hasBeenSyncedUsingRTCP, rtpMarkerBit,
-			      timeNow);
+			      timeNow, chunkY, &fromAddress);
     if (!fReorderingBuffer->storePacket(bPacket)) break;
 
     readSuccess = True;
   } while (0);
   if (!readSuccess) fReorderingBuffer->freePacket(bPacket);
 
-  doGetNextFrame1();
+  doGetNextFrame2();
   // If we didn't get proper data this time, we'll get another chance
 }
 
@@ -437,13 +593,15 @@ void BufferedPacket
 ::assignMiscParams(unsigned short rtpSeqNo, unsigned rtpTimestamp,
 		   struct timeval presentationTime,
 		   Boolean hasBeenSyncedUsingRTCP, Boolean rtpMarkerBit,
-		   struct timeval timeReceived) {
+		   struct timeval timeReceived, unsigned short chunkRef, struct sockaddr_in* addr) {
   fRTPSeqNo = rtpSeqNo;
   fRTPTimestamp = rtpTimestamp;
   fPresentationTime = presentationTime;
   fHasBeenSyncedUsingRTCP = hasBeenSyncedUsingRTCP;
   fRTPMarkerBit = rtpMarkerBit;
   fTimeReceived = timeReceived;
+  fChunkRef = chunkRef; 
+  fAddr = addr;
 }
 
 void BufferedPacket::skip(unsigned numBytes) {
@@ -468,6 +626,8 @@ void BufferedPacket::use(unsigned char* to, unsigned toSize,
 			 struct timeval& presentationTime,
 			 Boolean& hasBeenSyncedUsingRTCP,
 			 Boolean& rtpMarkerBit) {
+
+
   unsigned char* origFramePtr = &fBuf[fHead];
   unsigned char* newFramePtr = origFramePtr; // may change in the call below
   unsigned frameSize, frameDurationInMicroseconds;
@@ -481,7 +641,12 @@ void BufferedPacket::use(unsigned char* to, unsigned toSize,
     bytesUsed = frameSize;
   }
 
+  //unsigned short transfer = 156;
+  //fprintf(stderr, "\n\n    right before memmove %u\n", transfer);
+
+  //memmove(to, &transfer, 2);
   memmove(to, newFramePtr, bytesUsed);
+  
   fHead += (newFramePtr - origFramePtr) + frameSize;
   ++fUseCount;
 
@@ -533,6 +698,8 @@ void ReorderingPacketBuffer::reset() {
   resetHaveSeenFirstPacket();
   fHeadPacket = fTailPacket = fSavedPacket = NULL;
 }
+
+
 
 BufferedPacket* ReorderingPacketBuffer::getFreePacket(MultiFramedRTPSource* ourSource) {
   if (fSavedPacket == NULL) { // we're being called for the first time
@@ -651,9 +818,17 @@ BufferedPacket* ReorderingPacketBuffer
     fNextExpectedSeqNo = fHeadPacket->rtpSeqNo();
         // we've given up on earlier packets now
     packetLossPreceded = True;
+    fprintf(stderr, "\n\n    PACKET LOSS PACKET LOSS\n");
+   
+
+
     return fHeadPacket;
   }
 
   // Otherwise, keep waiting for our desired packet to arrive:
   return NULL;
+}
+
+BufferedPacket* ReorderingPacketBuffer::getLastCompletedPacket() {
+  return fTailPacket;
 }

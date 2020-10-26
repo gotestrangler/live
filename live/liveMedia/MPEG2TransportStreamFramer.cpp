@@ -147,6 +147,18 @@ void MPEG2TransportStreamFramer
 
 void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize,
 						    struct timeval presentationTime) {
+
+  fprintf(stderr, "\n\n    MPEG2TransportStreamFramer::afterGettingFrame1 %u\n", inputSource()->getCurChunk());
+  setCurChunk(inputSource()->getCurChunk());
+  if(inputSource()->getPacketLossNotice()){
+    setPacketLossNotice();
+    inputSource()->removePacketLossNotice();
+  }
+
+  
+
+
+  
   fFrameSize += frameSize;
   unsigned const numTSPackets = fFrameSize/TRANSPORT_PACKET_SIZE;
   fNumTSPacketsToStream -= numTSPackets;

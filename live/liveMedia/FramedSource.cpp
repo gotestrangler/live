@@ -51,6 +51,30 @@ Boolean FramedSource::lookupByName(UsageEnvironment& env, char const* sourceName
   return True;
 }
 
+
+  void FramedSource::setCurChunk(unsigned short in){
+      fprintf(stderr, "\n     FramedSource::setCurChunk %u\n", in);
+      fCurChunk = in; 
+  }
+  
+
+  unsigned short FramedSource::getCurChunk(){
+    fprintf(stderr, "\n     FramedSource::getCurChunk %u\n", fCurChunk);
+    return fCurChunk;
+  }
+
+  void FramedSource::setPacketLossNotice(){
+    fPacketLossNotice = True; 
+  }
+
+  Boolean FramedSource::getPacketLossNotice(){
+    return fPacketLossNotice; 
+  }
+
+  void FramedSource::removePacketLossNotice(){
+    fPacketLossNotice = False; 
+  }
+
 void FramedSource::getNextFrame(unsigned char* to, unsigned maxSize,
 				afterGettingFunc* afterGettingFunc,
 				void* afterGettingClientData,
@@ -58,7 +82,7 @@ void FramedSource::getNextFrame(unsigned char* to, unsigned maxSize,
 				void* onCloseClientData) {
 
   
-  fprintf(stderr, "\n     FramedSource::getNextFrame\n");
+  //fprintf(stderr, "\n     FramedSource::getNextFrame\n");
         
   // Make sure we're not already being read:
   if (fIsCurrentlyAwaitingData) {
@@ -77,6 +101,7 @@ void FramedSource::getNextFrame(unsigned char* to, unsigned maxSize,
   fIsCurrentlyAwaitingData = True;
 
 
+
     fprintf(stderr, "\n     FramedSource::getNextFrame 3\n");
 
   //doStopGettingFrames();
@@ -84,6 +109,8 @@ void FramedSource::getNextFrame(unsigned char* to, unsigned maxSize,
 }
 
 void FramedSource::afterGetting(FramedSource* source) {
+  //fprintf(stderr, "\n     aftergetting\n");
+
   source->nextTask() = NULL;
   source->fIsCurrentlyAwaitingData = False;
       // indicates that we can be read again
@@ -91,6 +118,8 @@ void FramedSource::afterGetting(FramedSource* source) {
       // called below tries to read another frame (which it usually will)
 
   if (source->fAfterGettingFunc != NULL) {
+      fprintf(stderr, "\n     aftergetting 2\n");
+
     (*(source->fAfterGettingFunc))(source->fAfterGettingClientData,
 				   source->fFrameSize, source->fNumTruncatedBytes,
 				   source->fPresentationTime,
@@ -99,11 +128,15 @@ void FramedSource::afterGetting(FramedSource* source) {
 }
 
 void FramedSource::handleClosure(void* clientData) {
+    //fprintf(stderr, "\n     handleClosure 1\n");
+
   FramedSource* source = (FramedSource*)clientData;
   source->handleClosure();
 }
 
 void FramedSource::handleClosure() {
+    //fprintf(stderr, "\n    handleClosure 2\n");
+
   fIsCurrentlyAwaitingData = False; // because we got a close instead
   if (fOnCloseFunc != NULL) {
     (*fOnCloseFunc)(fOnCloseClientData);

@@ -97,7 +97,7 @@ public: // redefined virtual functions:
 protected: // redefined virtual functions:
   virtual Boolean continuePlaying();
 
-private:
+protected:
   void buildAndSendPacket(Boolean isFirstPacket);
   void packFrame();
   void sendPacketIfNecessary();
@@ -115,7 +115,7 @@ private:
 
   static void ourHandleClosure(void* clientData);
 
-private:
+protected:
   OutPacketBuffer* fOutBuf;
 
   Boolean fNoFramesLeft;

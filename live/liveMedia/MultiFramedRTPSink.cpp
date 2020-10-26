@@ -96,7 +96,7 @@ unsigned MultiFramedRTPSink::specialHeaderSize() const {
 
 unsigned MultiFramedRTPSink::frameSpecificHeaderSize() const {
   // default implementation: Assume no frame-specific header:
-  return 0;
+  return 4;
 }
 
 unsigned MultiFramedRTPSink::computeOverflowForNewFrame(unsigned newFrameSize) const {

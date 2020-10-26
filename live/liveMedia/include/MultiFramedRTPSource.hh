@@ -57,6 +57,7 @@ protected:
   virtual void doGetNextFrame();
   virtual void doStopGettingFrames();
 
+
 private:
   // redefined virtual functions:
   virtual void setPacketReorderingThresholdTime(unsigned uSeconds);
@@ -64,6 +65,7 @@ private:
 private:
   void reset();
   void doGetNextFrame1();
+  void doGetNextFrame2();
 
   static void networkReadHandler(MultiFramedRTPSource* source, int /*mask*/);
   void networkReadHandler1();
@@ -96,7 +98,7 @@ public:
   void assignMiscParams(unsigned short rtpSeqNo, unsigned rtpTimestamp,
 			struct timeval presentationTime,
 			Boolean hasBeenSyncedUsingRTCP,
-			Boolean rtpMarkerBit, struct timeval timeReceived);
+			Boolean rtpMarkerBit, struct timeval timeReceived, unsigned short chunkRef, struct sockaddr_in* addr);
   void skip(unsigned numBytes); // used to skip over an initial header
   void removePadding(unsigned numBytes); // used to remove trailing bytes
   void appendData(unsigned char* newData, unsigned numBytes);
@@ -109,6 +111,8 @@ public:
   BufferedPacket*& nextPacket() { return fNextPacket; }
 
   unsigned short rtpSeqNo() const { return fRTPSeqNo; }
+  unsigned short nowChunk() const { return fChunkRef; }
+  struct sockaddr_in* addr() const { return fAddr; }
   struct timeval const& timeReceived() const { return fTimeReceived; }
 
   unsigned char* data() const { return &fBuf[fHead]; }
@@ -134,7 +138,8 @@ protected:
 
 private:
   BufferedPacket* fNextPacket; // used to link together packets
-
+  unsigned short fChunkRef;
+  struct sockaddr_in* fAddr;
   unsigned fUseCount;
   unsigned short fRTPSeqNo;
   unsigned fRTPTimestamp;

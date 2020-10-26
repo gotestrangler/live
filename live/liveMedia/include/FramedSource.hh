@@ -70,6 +70,15 @@ protected:
 
   virtual void doStopGettingFrames();
 
+  void setCurChunk(unsigned short in);
+  void setPacketLossNotice();
+
+  
+public: 
+  unsigned short getCurChunk();
+  Boolean getPacketLossNotice();
+  void removePacketLossNotice();
+
 protected:
   // The following variables are typically accessed/set by doGetNextFrame()
   unsigned char* fTo; // in
@@ -88,7 +97,8 @@ private:
   void* fAfterGettingClientData;
   onCloseFunc* fOnCloseFunc;
   void* fOnCloseClientData;
-
+  unsigned short fCurChunk;
+  Boolean fPacketLossNotice;
   Boolean fIsCurrentlyAwaitingData;
 };
 
