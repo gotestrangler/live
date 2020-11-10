@@ -17,11 +17,21 @@
 #include <string>
 #include "InputFile.hh"
 
+#include<stdio.h>
+#include<sys/stat.h>
+#include<iostream>
+#include<string.h>
+#include<string>
+#include<dirent.h>
+
 
 
 
 MPEG2TransportStreamFramer* videoSource1;
+<<<<<<< HEAD
 //SimpleRTPSink* videoSink1;
+=======
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
 ManifestRTPSink* videoSink1;
 HashTable* commonDenseTable;
 
@@ -49,17 +59,17 @@ RTSPDenseServer* RTSPDenseServer
 ::createNew(UsageEnvironment& env, Port ourPort,
 	    UserAuthenticationDatabase* authDatabase,
 	    unsigned reclamationSeconds,
-	    Boolean streamRTPOverTCP, int number, ServerMediaSession * startingSession) {
+	    Boolean streamRTPOverTCP, int number, ServerMediaSession * startingSession, char* name) {
 
 
-  //fprintf(stderr, "\n 2 number is: %d\n", number);
+  fprintf(stderr, "\n 2 number is: %d\n", number);
   int ourSocket = setUpOurSocket(env, ourPort);
   if (ourSocket == -1) return NULL;
 
   RTSPDenseServer * ne = new RTSPDenseServer(env, ourSocket, ourPort,
 					    authDatabase,
 					    reclamationSeconds,
-					    streamRTPOverTCP, number, startingSession);
+					    streamRTPOverTCP, number, startingSession, name);
 
   ne->ref = 0; 
 
@@ -75,20 +85,60 @@ RTSPDenseServer* RTSPDenseServer
 RTSPDenseServer::RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase,
 				 unsigned reclamationSeconds,
-				 Boolean streamRTPOverTCP, int number, ServerMediaSession *startingSession)
+				 Boolean streamRTPOverTCP, int number, ServerMediaSession *startingSession, char* name)
   : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds),
     fStreamRTPOverTCP(streamRTPOverTCP), fAllowStreamingRTPOverTCP(True), 
-    fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)), denseTable(HashTable::create(ONE_WORD_HASH_KEYS)), filenames(HashTable::create(ONE_WORD_HASH_KEYS)), number(number) {
+    fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)), denseTable(HashTable::create(ONE_WORD_HASH_KEYS)), name(name), number(number) {
 }
 
 RTSPDenseServer::~RTSPDenseServer() {
     cleanup();
 }
 
+void RTSPDenseServer::getFile(int number, char* pointer){
+    fprintf(stderr, "getfile number: %d and name: %s\n", number, name);
+
+    DIR *dir; // pointer to directory
+    struct dirent *entry; // all stuff in the directory
+    struct stat info; // info about each entry
+
+    dir = opendir(name);
+    
+
+    
+    if (!dir)
+    {
+      fprintf(stderr, "getfile no dir\n");
+        return;
+    }
+
+    int eller = 0;
+    
+    while ((entry = readdir(dir)) != NULL){
+          int entryLen = strlen(entry->d_name);
+          if(entry->d_name[entryLen - 1] == '8'){
+            if(number == eller){
+              
+              memcpy(pointer, name, strlen(name));
+              memcpy(pointer + strlen(name), entry->d_name, strlen(entry->d_name) + 1);
+              fprintf(stderr, "entry->d_name %s\n", pointer);
+            }
+            eller++;
+            
+          }
+
+
+    }
+    closedir(dir);
+  
+
+}
+
 
 void RTSPDenseServer::make(ServerMediaSession *session, int number){
 
-      fprintf(stderr, "/////////////// YOUR MAKE /////////////\n");
+    
+      fprintf(stderr, "/////////////// YOUR MAKE ///////////// i: %d\n", number);
       //fprintf(stderr, "Checking input socket ID: %d\n", fClientInputSocket);
       //fprintf(stderr, "Checking output socket ID: %d\n", fClientOutputSocket);
       //fprintf(stderr, "ref of the densesession: %d\n", fOurRTSPServer.ref );
@@ -101,18 +151,25 @@ void RTSPDenseServer::make(ServerMediaSession *session, int number){
         firstsesh->serversession = session; 
         
         // Create 'groupsocks' for RTP and RTCP:
-        //struct in_addr destinationAddress;
-        //destinationAddress.s_addr = chooseRandomIPv4SSMAddress(env);
-
-         char const* sessionAddressStr = "239.255.42.42";
-
+      
         struct in_addr destinationAddress;
-        destinationAddress.s_addr = our_inet_addr(sessionAddressStr);
+        destinationAddress.s_addr = chooseRandomIPv4SSMAddress(env);
 
-        const unsigned short rtpPortNum = 18888 + ref;
-        //fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
-        const unsigned short rtcpPortNum = rtpPortNum+ 1 + ref;
-        //fprintf(stderr, "rtcpPortNum: %hu\n", rtcpPortNum);
+ 
+        //char checkAddr[100];
+        //inet_ntop(AF_INET, &destinationAddress, checkAddr, 100);
+        //fprintf(stderr, "chekcing random multicast address: %s\n", checkAddr);
+        //delete[] checkAddr;
+
+        //char const* sessionAddressStr = "239.255.42.42";
+
+        //struct in_addr destinationAddress;
+        //destinationAddress.s_addr = our_inet_addr(sessionAddressStr);
+
+        const unsigned short rtpPortNum = 18888 + (ref*2);
+        fprintf(stderr, "rtpPortNum: %hu\n", rtpPortNum);
+        const unsigned short rtcpPortNum = rtpPortNum + 1;
+        fprintf(stderr, "rtcpPortNum: %hu\n", rtcpPortNum);
         const unsigned char ttl = 255;
 
         Port rtpPort(rtpPortNum);
@@ -125,7 +182,10 @@ void RTSPDenseServer::make(ServerMediaSession *session, int number){
         // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
         OutPacketBuffer::maxSize = 100000;
         //RTPSink* videoSink;
+<<<<<<< HEAD
         //firstsesh->videoSink = SimpleRTPSink::createNew(env, firstsesh->rtpGroupsock, 96, 90000, "video", "MP2T", 1, True, False);
+=======
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
         firstsesh->videoSink = ManifestRTPSink::createNew(env, firstsesh->rtpGroupsock, 96, 90000, "video", "MP2T", 1, True, False);
 
         u_int32_t sinkbase =  firstsesh->videoSink->getBase(); 
@@ -133,7 +193,7 @@ void RTSPDenseServer::make(ServerMediaSession *session, int number){
         u_int32_t firstStamp = firstsesh->videoSink->getFirstTimeStamp();
 
 
-        fprintf(stderr, "Har laget SimpleRTPSink og den har for oyeblikket timestamp: %lu\n Den har for oyeblikket sinkbase: %lu\n Den har for oybelikket sinkfreq: %d\n Den har for oybelikket first timestamp: %lu\n\n", (unsigned long)firstsesh->videoSink->firstTimestamp, sinkbase, sinkfreq, firstStamp);
+        fprintf(stderr, "Har laget SimpleRTPSink og den har for oyeblikket timestamp: %lu\n Den har for oyeblikket sinkbase: %u\n Den har for oybelikket sinkfreq: %d\n Den har for oybelikket first timestamp: %u\n\n", (unsigned long)firstsesh->videoSink->firstTimestamp, sinkbase, sinkfreq, firstStamp);
 
       
         fprintf(stderr, "/////////////// YOUR MAKE 1 /////////////\n");
@@ -172,13 +232,22 @@ void RTSPDenseServer::make(ServerMediaSession *session, int number){
         unsigned const inputDataChunkSize
         = TRANSPORT_PACKETS_PER_NETWORK_PACKET*TRANSPORT_PACKET_SIZE;
 
-        fprintf(stderr, "/////////////// YOUR MAKE 3 ///////////// : %s\n", session->streamFile());
+        fprintf(stderr, "/////////////// YOUR MAKE 3 ///////////// : %s\n", name);
         
+
         
-        firstsesh->fileSource = CheckSource::createNew(envir(), session->streamFile(), inputDataChunkSize);
+        getFile(number, firstsesh->sessionManifest);
+        fprintf(stderr, "Outside of getfile: %s\n", firstsesh->sessionManifest);
+
+<<<<<<< HEAD
+        firstsesh->fileSource = CheckSource::createNew(envir(), firstsesh->sessionManifest, inputDataChunkSize);
 
         firstsesh->videoSink->setCheckSource(firstsesh->fileSource);
         
+=======
+        firstsesh->videoSink->setCheckSource(firstsesh->fileSource);
+
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
         if (firstsesh->fileSource == NULL) {
           envir() << "Unable to open file \"" << session->streamFile()
               << "\" as a byte-stream file source\n";
@@ -206,6 +275,9 @@ void RTSPDenseServer::make(ServerMediaSession *session, int number){
         fprintf(stderr, "/////////////// FERDIG MAKE /////////////\n");
 
         //handleCmd_DESCRIBE('teststream'); 
+  
+
+
 
 }
 
@@ -995,14 +1067,14 @@ void RTSPDenseServer::RTSPDenseClientSession
   char* concatenatedStreamName = NULL; // in the normal case
 
   fprintf(stderr, "############### DIN SETUP ###############\n");
-  //fprintf(stderr, "urlPreSuffix(streamname): %s        urlSuffix(subsession/track): %s \n", urlPreSuffix, urlSuffix);
+  fprintf(stderr, "urlPreSuffix(streamname): %s        urlSuffix(subsession/track): %s \n", urlPreSuffix, urlSuffix);
   
   do {
     // First, make sure the specified stream name exists:
     ServerMediaSession* sms
       = fOurServer.lookupServerMediaSession(streamName, fOurServerMediaSession == NULL);
     if (sms == NULL) {
-      //fprintf(stderr, "   handleCmd_SETUP Server Media Session = NULL first time -> %s\n", streamName);
+      fprintf(stderr, "   handleCmd_SETUP Server Media Session = NULL first time -> %s\n", streamName);
       // Check for the special case (noted above), before we give up:
       if (urlPreSuffix[0] == '\0') {
 	streamName = urlSuffix;
@@ -1014,32 +1086,34 @@ void RTSPDenseServer::RTSPDenseClientSession
       trackId = NULL;
       
       // Check again:
-      //fprintf(stderr, "   handleCmd_SETUP Server Media Session = checking the concatenated stream name: %s\n", streamName);
+      fprintf(stderr, "   handleCmd_SETUP Server Media Session = checking the concatenated stream name: %s\n", streamName);
       sms = fOurServer.lookupServerMediaSession(streamName, fOurServerMediaSession == NULL);
     }
     if (sms == NULL) {
       if (fOurServerMediaSession == NULL) {
 	// The client asked for a stream that doesn't exist (and this session descriptor has not been used before):
-  //fprintf(stderr, "   handleCmd_SETUP Server Media Session = fOurServerMediaSession == NULL: %s\n", streamName);
+  fprintf(stderr, "   handleCmd_SETUP Server Media Session = fOurServerMediaSession == NULL: %s\n", streamName);
 	ourClientConnection->handleCmd_notFound();
       } else {
 	// The client asked for a stream that doesn't exist, but using a stream id for a stream that does exist. Bad request:
-  //fprintf(stderr, "   handleCmd_SETUP Server Media Session = NULL badRequest()\n");
+  fprintf(stderr, "   handleCmd_SETUP Server Media Session = NULL badRequest()\n");
 	ourClientConnection->handleCmd_bad();
       }
+      
       break;
     } else {
-      //fprintf(stderr, "   handleCmd_SETUP Server Media Session -> sms ER IKKE NULL!\n");
+      fprintf(stderr, "   handleCmd_SETUP Server Media Session -> sms ER IKKE NULL!\n");
       if (fOurServerMediaSession == NULL) {
 	// We're accessing the "ServerMediaSession" for the first time.
-  //fprintf(stderr, "   handleCmd_SETUP Server Media Session -> fOurServerMediaSession = sms;\n");
+  fprintf(stderr, "   handleCmd_SETUP Server Media Session -> fOurServerMediaSession = sms;\n");
 	fOurServerMediaSession = sms;
-  //fprintf(stderr, "   handleCmd_SETUP Server Media Session -> fOurServerMediaSession->incrementReferenceCount();\n");
+  fprintf(stderr, "   handleCmd_SETUP Server Media Session -> fOurServerMediaSession->incrementReferenceCount();\n");
 	fOurServerMediaSession->incrementReferenceCount();
       } else if (sms != fOurServerMediaSession) {
 	// The client asked for a stream that's different from the one originally requested for this stream id.  Bad request:
-  //fprintf(stderr, "   handleCmd_SETUP Server Media Session = NULL badRequest()\n");
+  fprintf(stderr, "   handleCmd_SETUP Server Media Session = NULL badRequest()\n");
 	ourClientConnection->handleCmd_bad();
+  
 	break;
       }
     }

@@ -52,7 +52,13 @@ FileSink::~FileSink() {
 
 FileSink* FileSink::createNew(UsageEnvironment& env, char const* fileName,
 			      unsigned bufferSize, Boolean oneFilePerFrame) {
+<<<<<<< HEAD
               
+=======
+    
+  fprintf(stderr, "\n     FileSink::createNew\n");
+
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
   do {
     FILE* fid;
     char const* perFrameFileNamePrefix;
@@ -72,7 +78,8 @@ FileSink* FileSink::createNew(UsageEnvironment& env, char const* fileName,
     ret->fWritten = 0;
     ret->curChunk = -1;
     ret->lastOffset = 0;
-    ret->antLoss = 0; 
+    ret->antLoss = 0;
+    ret->writeFromPacket = true; 
     return ret;
   } while (0);
 
@@ -80,7 +87,7 @@ FileSink* FileSink::createNew(UsageEnvironment& env, char const* fileName,
 }
 
 Boolean FileSink::continuePlaying() {
-  //fprintf(stderr, "\n       HEY HEY HEY HEYcontinuePlaying()\n");
+  fprintf(stderr, "\n       FileSink::continuePlaying() - buffersize: %u\n", fBufferSize);
   if (fSource == NULL) return False;
 
   fSource->getNextFrame(fBuffer, fBufferSize,
@@ -117,6 +124,9 @@ void FileSink::addData(unsigned char const* data, unsigned dataSize,
     fOutFid = OpenOutputFile(envir(), fPerFrameFileNameBuffer);
   }
 
+  fprintf(stderr, "\n     FileSink::addData - this is where fwrite is called\n");
+
+
   // Write to our file:
 #ifdef TEST_LOSS
   static unsigned const framesPerPacket = 10;
@@ -128,22 +138,30 @@ void FileSink::addData(unsigned char const* data, unsigned dataSize,
 
   if (!packetIsLost)
 #endif
+
   FramedSource* chunkSet = source();
   unsigned short throww = chunkSet->getCurChunk();
   Boolean loss = chunkSet->getPacketLossNotice();
+  
 
-  if(loss && fWritten != 0){
-    fprintf(stderr, "\naddData PACKET LOSS PRECEEDED THIS fWritten: %u\n", fWritten);
-    antLoss++; 
-    chunkSet->removePacketLossNotice();
+  
+  //pullAll();
+  
+
+  if(loss && fWritten != 0 && writeFromPacket){
+    pullPatch();
+
+  }
+  
+  if(throww != curChunk){
+    lastOffset = fWritten; 
+    curChunk = throww;
+    writeFromPacket = true;
   }
 
-  if (fOutFid != NULL && data != NULL) {
+  fprintf(stderr, "\n %u %u %s\n", fOutFid, data, writeFromPacket ? "true" : "false");
+  if (fOutFid != NULL && data != NULL && writeFromPacket) {
 
-    if(throww != curChunk){
-      lastOffset = fWritten; 
-      curChunk = throww;
-    }
     fWritten += fwrite(data, 1, dataSize, fOutFid);
     fprintf(stderr, "\naddData after fWritten the chunk here is: %u\n\n the fWritten is: %u\n\n last offset: %u ant loss: %u\n", throww, fWritten, lastOffset, antLoss);
 
@@ -153,16 +171,86 @@ void FileSink::addData(unsigned char const* data, unsigned dataSize,
   }
 }
 
+void FileSink::pullPatch(){
+  FILE* somebody;
+  long fileSize; 
+  FramedSource* chunkSet = source();
+  unsigned short throww = chunkSet->getCurChunk();
+  Boolean loss = chunkSet->getPacketLossNotice();
+  struct sockaddr_in* piece = chunkSet->getAddr();
+
+  fprintf(stderr, "\naddData PACKET LOSS PRECEEDED THIS fWritten: %u\n", fWritten);
+  fileSize = pullChunk(throww, piece); 
+  antLoss++; 
+  chunkSet->removePacketLossNotice();
+  writeFromPacket = false; 
+  fWritten = lastOffset + fileSize; 
+
+}
+
+void FileSink::pullBeginning(int ant){
+  long fileSize; 
+  FramedSource* chunkSet = source();
+  struct sockaddr_in* piece = chunkSet->getAddr();
+
+  for(int i = 0; i < ant; i++){
+    fprintf(stderr, "\naddData PACKET LOSS PRECEEDED THIS fWritten: %u, lastOffset: %u\n", fWritten, lastOffset);
+    fileSize = pullChunk(i, piece); 
+    chunkSet->removePacketLossNotice();
+    writeFromPacket = false; 
+    fWritten = fileSize;
+    curChunk = i; 
+  }
+
+}
+
+void FileSink::pullAll(){
+
+  
+  long somebody;
+  unsigned long fileSize; 
+  FramedSource* chunkSet = source();
+  size_t written; 
+  //unsigned short throww = chunkSet->getCurChunk();
+  //Boolean loss = chunkSet->getPacketLossNotice();
+  struct sockaddr_in* piece = chunkSet->getAddr();
+  unsigned long total = 0;
+  for(int i = 0; i < 10; i++){
+
+    somebody = pullChunk(i, piece); 
+    /*
+    fseek(somebody, 0, SEEK_END);
+    fileSize = ftell(somebody);
+    fseek(somebody, 0, SEEK_SET);
+    written += fwrite(somebody, 1, fileSize, fOutFid);
+    fprintf(stderr, "\npullAll i: %lu total: %lu fileSize: %lu ftell(fOutFid): %lu written: %zu\n", i, total, fileSize, ftell(fOutFid), written);
+    total += written;
+    fclose(somebody);
+    fileSize = 0; */
+  }
+
+  fprintf(stderr, "\noutside\n");
+
+  fclose(fOutFid);
+  exit(0);
+}
+
 void FileSink::afterGettingFrame(unsigned frameSize,
 				 unsigned numTruncatedBytes,
 				 struct timeval presentationTime) {
 
 
+<<<<<<< HEAD
     FramedSource* chunkSet = source();
     //MultiFramedRTPSource* casted = dynamic_cast<MultiFramedRTPSource*>(chunkSet);
 
     fprintf(stderr, "\n       HEY HEY HEY HEY afterGettingFrame the chunk here is: %u\n", chunkSet->getCurChunk());
 
+=======
+  fprintf(stderr, "\n       FileSink::afterGettingFrame - buffersize: %u\n", fBufferSize);
+
+  
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
   if (numTruncatedBytes > 0) {
     envir() << "FileSink::afterGettingFrame(): The input frame data was too large for our buffer size ("
 	    << fBufferSize << ").  "
@@ -189,15 +277,17 @@ void FileSink::afterGettingFrame(unsigned frameSize,
   }
 
   // Then try getting the next frame:
+    fprintf(stderr, "\n     FileSink::addData - continuePlaying() TTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n");
+
   continuePlaying();
 }
 
-FILE * FileSink::pullChunk(unsigned short numb, struct sockaddr_in* addr) {
+long FileSink::pullChunk(unsigned short numb, struct sockaddr_in* addr) {
 
   AddressString *adret = new AddressString(*addr);
   fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s\n", adret->val());
 
-  const char *reqstart = "wget -d ";
+  const char *reqstart = "wget ";
   int len0 = strlen(reqstart);
   const char * addrstr = adret->val();
   int len1 = strlen(addrstr);
@@ -213,37 +303,61 @@ FILE * FileSink::pullChunk(unsigned short numb, struct sockaddr_in* addr) {
   //char * endRes = reqstart + manstart + chu + manend + reqend;
   fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk addr: %d \n", len1);
   char newpath[reqlen + 2];
+  char fileName[len2 + len3 + 1];
   
   
   memcpy(newpath, reqstart, len0);
   newpath[len0] = '\0';
-  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s \n", newpath);
+  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s og %s\n", newpath, fileName);
 
   memcpy(newpath + len0, addrstr, len1);
   newpath[len0 + len1] = '\0';
-  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s \n", newpath);
+  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s og %s\n", newpath, fileName);
 
   
   memcpy(newpath + len0 + len1, manstart, len2);
+  memcpy(fileName, manstart + 1, len2 - 1);
+  fileName[len2] = '\0';
   newpath[len0 + len1 + len2] = '\0';
-  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s \n", newpath);
+  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s og %s\n", newpath, fileName);
 
   char chunkchar = '0' + numb;
   newpath[len0 + len1 + len2] = chunkchar;
   newpath[len0 + len1 + len2 + 1] = '\0';
-  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s \n", newpath);
+  fileName[len2 - 1] = chunkchar;
+  fileName[len2] = '\0';
+  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s og %s\n", newpath, fileName);
 
   memcpy(newpath + len0 + len1 + len2 + 1, manend, len3);
   newpath[len0 + len1 + len2 + len3 + 1] = '\0';
-  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s \n", newpath);
+  memcpy(fileName + len2, manend, len3);
+  fileName[len2 + len3] = '\0';
+  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s og %s\n", newpath, fileName);
 
   memcpy(newpath + len0 + len1 + len2 + len3 + 1, reqend, len4);
   newpath[reqlen + 1] = '\0';
-  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s \n", newpath);
+  fprintf(stderr, "\n\n    ReorderingPacketBuffer::pullChunk %s og %s\n", newpath, fileName);
   
-  FILE* file = popen(newpath,"r");
+  system(newpath);
 
-  return file;
+  FILE* file = fopen(fileName, "rb");
+  fseek(file, 0, SEEK_END);
+  long fileSize = ftell(file);
+  fprintf(stderr, "\nFILESIZE: %ld foutfid: %d\n", fileSize, ftell(fOutFid));
+  fseek(file, 0, SEEK_SET);
+
+  char * buffer = new char [fileSize];
+
+  fread(buffer, 1, fileSize, file);
+  fseek(fOutFid, 0, lastOffset);
+  long written = fwrite(buffer, 1, fileSize, fOutFid);
+  fprintf(stderr, "\nwritten: %zu foutfid: %d\n", written, ftell(fOutFid));
+  
+  fclose(file);
+
+
+  delete[] buffer;
+  return written;
 
   
 }

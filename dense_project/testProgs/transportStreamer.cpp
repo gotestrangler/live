@@ -124,13 +124,13 @@ int main(int argc, char** argv) {
 */
 
 ServerMediaSession* sms
-    = ServerMediaSession::createNew(*env, "testStream", "../extras/chunks/manifes.m3u8",
+    = ServerMediaSession::createNew(*env, "testStream", NULL,
 		   "Session streamed by \"testMPEG2TransportStreamer\"", isSSM, "Hei hei hei gote\n");
   
   
 
   //RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554);
-  RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554, NULL, 65U, NULL, 1, sms);
+  RTSPDenseServer* rtspServer = RTSPDenseServer::createNew(*env, 8554, NULL, 65U, NULL, 1, sms, argv[1]);
   
 
   // Note that this (attempts to) start a server on the default RTSP server
@@ -146,10 +146,6 @@ ServerMediaSession* sms
   delete[] url;
 
 
- for(int i = 0; i < (argc - 1); i++){
-   *env << "Adding filename: " << argv[i + 1] << " to the denseServer\n";
-   rtspServer->filenames->Add((const char *)i, argv[i + 1]);
- }
 
 
 

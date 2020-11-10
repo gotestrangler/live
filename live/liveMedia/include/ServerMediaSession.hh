@@ -105,6 +105,7 @@ private:
   char* fInfoSDPString;
   char* fDescriptionSDPString;
   char* fMiscSDPLines;
+  
   struct timeval fCreationTime;
   unsigned fReferenceCount;
   Boolean fDeleteWhenUnreferenced;

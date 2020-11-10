@@ -69,10 +69,7 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
- for(int i = 0; i < (argc - 1); i++){
-   *env << "Adding filename: " << argv[i + 1] << " to the denseServer\n";
-   rtspServer->filenames->Add((const char *)i, argv[i + 1]);
- }
+ 
 
 
 
@@ -124,7 +121,7 @@ int main(int argc, char** argv) {
   
   
   ServerMediaSession* sms
-    = ServerMediaSession::createNew(*env, "teststream", (char const*)rtspServer->filenames->Lookup((const char *)1),
+    = ServerMediaSession::createNew(*env, "teststream", argv[1],
 		   "Session streamed by \"testH264VideoStreamer\"",
 					   True /*SSM*/);
 

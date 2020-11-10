@@ -36,7 +36,7 @@ ByteStreamManifestSource::create(UsageEnvironment& env, char const* fileName,
   newSource->fFid = newFid; 
   newSource->fFileSize = GetFileSize(newpath, newFid);
 
-  fprintf(stderr, "In the creator the filesize for the first chunk: %d\n", newSource->fFileSize);
+  fprintf(stderr, "In the creator the filesize for the first chunk: %lu\n", newSource->fFileSize);
 
   
 
@@ -150,7 +150,6 @@ void ByteStreamManifestSource::fileReadableHandler(ByteStreamManifestSource* sou
 
 void ByteStreamManifestSource::doReadFromFile() {
   
-  u_int32_t firstTimestamp;
   // Try to read as many bytes as will fit in the buffer provided (or "fPreferredFrameSize" if less)
   if (fLimitNumBytesToStream && fNumBytesToStream < (u_int64_t)fMaxSize) {
     fMaxSize = (unsigned)fNumBytesToStream;
@@ -179,7 +178,7 @@ void ByteStreamManifestSource::doReadFromFile() {
 
   // Set the 'presentation time':
   if (fPlayTimePerFrame > 0 && fPreferredFrameSize > 0) {
-    fprintf(stderr, "BOOm %lu\n", fPlayTimePerFrame);
+    fprintf(stderr, "BOOm %u\n", fPlayTimePerFrame);
 
 
     if (fPresentationTime.tv_sec == 0 && fPresentationTime.tv_usec == 0) {

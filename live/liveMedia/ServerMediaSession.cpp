@@ -246,26 +246,6 @@ Boolean ServerMediaSession::isServerMediaSession() const {
 char* ServerMediaSession::generateSDPDescription() {
 
 
-        Port serverRTPPort(0);
-        Port serverRTCPPort(0);
-       
-        PassiveServerMediaSubsession* ettercastRTP = (PassiveServerMediaSubsession*)fSubsessionsHead;
-        
-        ettercastRTP->getInstances(serverRTPPort, serverRTCPPort);
-
-        int portnum = serverRTPPort.num();
- 
-        //fprintf(stderr, "        IN YOUR generateSDPDescription() -> RTSPSINK PORT: %hu\n", portnum );
-
-        portnum = serverRTCPPort.num();
-    
-        
-
-
-
-
-
-
 
   AddressString ipAddressStr(ourIPAddress(envir()));
   unsigned ipAddressStrSize = strlen(ipAddressStr.val());

@@ -33,11 +33,20 @@ CheckSource::createNew(UsageEnvironment& env, char const* fileName,
   FILE* fid = OpenInputFile(env, fileName);
   if (fid == NULL) return NULL;
 
+    fprintf(stderr, "In the creator \n");
+
+
   CheckSource* newSource
     = new CheckSource(env, fid, preferredFrameSize, playTimePerFrame);
+      fprintf(stderr, "In the creator \n");
+
   newSource->fFileSize = GetFileSize(fileName, fid);
   newSource->fReadSoFar = 0; 
   newSource->curChunk = 0; 
+   
+
+    fprintf(stderr, "In the creator \n");
+
 
     newSource->stripChunks();
     newSource->stripPath(fileName);
@@ -58,7 +67,7 @@ CheckSource::createNew(UsageEnvironment& env, char const* fileName,
   newSource->fFid = newFid; 
   newSource->fFileSize = GetFileSize(newpath, newFid);
 
-  fprintf(stderr, "In the creator the filesize for the first chunk: %d\n", newSource->fFileSize);
+  fprintf(stderr, "In the creator the filesize for the first chunk: %lu\n", newSource->fFileSize);
 
   return newSource;
 }
@@ -85,35 +94,39 @@ void CheckSource::stripPath(char const* fileName ){
 
 void CheckSource::stripChunks(){
   
-    fprintf(stderr, "ByteStreamManifestSource::stripChunks()\n");
+    fprintf(stderr, "CheckSource::stripChunks()\n");
 
     int sum = 0;
     int ant = 0;
+<<<<<<< HEAD
     size_t x = 0;
+=======
+    size_t x;
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
     char* line = NULL; 
 
     getline(&line, &x, fFid);
-    fprintf(stderr, "ByteStreamManifestSource::stripChunks() -> line is %s, line[0] is %c\n", line, line[0]);
+    fprintf(stderr, "CheckSource::stripChunks()-> line is %s, line[0] is %c\n", line, line[0]);
 
     if(line[0] != '#'){
-      fprintf(stderr, "ByteStreamManifestSource::stripChunks() -> THIS IS NOT CORRECT MANIFEST FORMAT STARTING WITH # -> line is %s\n", line);
+      fprintf(stderr, "CheckSource::stripChunks()-> THIS IS NOT CORRECT MANIFEST FORMAT STARTING WITH # -> line is %s\n", line);
       exit(0);
     }
    
     
     while(getline(&line, &x, fFid) > 0){
-      fprintf(stderr, "ByteStreamManifestSource::stripChunks() %s\n", line);
+      fprintf(stderr, "CheckSource::stripChunks() %s\n", line);
 
   
       if(line[0] != '#'){
-        fprintf(stderr, "ByteStreamManifestSource::stripChunks() -> addet chunk: %d string %s\n", sum, line);
+        fprintf(stderr, "CheckSource::stripChunks()-> addet chunk: %d string %s\n", sum, line);
 
         memcpy(fChunks[sum], line, strlen(line) + 1);
 
 
         sum++; 
       }else{
-        fprintf(stderr, "ByteStreamManifestSource::stripChunks() -> hoppet over: %s nummer %d\n", line, ant);
+        fprintf(stderr, "CheckSource::stripChunks() -> hoppet over: %s nummer %d\n", line, ant);
       }
       ant++; 
     }
@@ -152,6 +165,8 @@ CheckSource::CheckSource(UsageEnvironment& env, FILE* fid,
 
   // Test whether the file is seekable
   fFidIsSeekable = FileIsSeekable(fFid);
+    fprintf(stderr, "In the creator \n");
+
 }
 
 CheckSource::~CheckSource() {
@@ -204,7 +219,7 @@ void CheckSource::fileReadableHandler(CheckSource* source, int /*mask*/) {
 }
 
 int CheckSource::manageManifest(){
-    fprintf(stderr, "CheckSource::manageManifest() - det er %"PRIu64", %"PRIu64", %"PRIu64"\n", fFileSize, fReadSoFar, fFileSize - fReadSoFar);
+    fprintf(stderr, "CheckSource::manageManifest() - det er %"PRIu64", %"PRIu64", %"PRIu64"\n", fFileSize, fReadSoFar, fFileSize - fReadSoFar );
     
     if( (fFileSize - fReadSoFar) == 0 && curChunk <= numbChunks){
         curChunk++; 
@@ -232,7 +247,7 @@ int CheckSource::manageManifest(){
         fFileSize = GetFileSize(newpath, newFid);
 
     
-        fprintf(stderr, "In the CheckSource::manageManifest(): har opnet en ny fil %s med storrelse: %d\n", newpath, fFileSize);
+        fprintf(stderr, "In the CheckSource::manageManifest(): har opnet en ny fil %s med storrelse: %lu\n", newpath, fFileSize );
         
         fReadSoFar = 0; 
 
@@ -259,7 +274,7 @@ void CheckSource::doReadFromFile() {
 
     fFrameSize = fread(fTo, 1, fMaxSize, fFid);
     fReadSoFar += fFrameSize;
-    int readSize = manageManifest();
+    manageManifest();
     
 
 
@@ -272,7 +287,7 @@ void CheckSource::doReadFromFile() {
 
   // Set the 'presentation time':
   if (fPlayTimePerFrame > 0 && fPreferredFrameSize > 0) {
-    fprintf(stderr, "BOOm %lu\n", fPlayTimePerFrame);
+    fprintf(stderr, "BOOm %u\n", fPlayTimePerFrame);
 
 
     if (fPresentationTime.tv_sec == 0 && fPresentationTime.tv_usec == 0) {

@@ -59,7 +59,10 @@ protected:
 				 unsigned numTruncatedBytes,
 				 struct timeval presentationTime);
 
-  FILE * pullChunk(unsigned short numb, struct sockaddr_in* addr);
+  long pullChunk(unsigned short numb, struct sockaddr_in* addr);
+  void pullPatch();
+  void pullBeginning(int ant);
+  void pullAll();
 
   FILE* fOutFid;
   unsigned char* fBuffer;
@@ -68,7 +71,7 @@ protected:
   char* fPerFrameFileNameBuffer; // used if "oneFilePerFrame" is True
   struct timeval fPrevPresentationTime;
   unsigned fSamePresentationTimeCounter;
-
+  Boolean writeFromPacket;
   unsigned fWritten;
   unsigned curChunk;
   unsigned lastOffset; 

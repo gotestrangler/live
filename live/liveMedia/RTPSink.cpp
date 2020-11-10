@@ -59,7 +59,14 @@ RTPSink::RTPSink(UsageEnvironment& env,
   fTotalOctetCountStartTime = fCreationTime;
   resetPresentationTimes();
 
-  fSeqNo = (u_int16_t)our_random();
+  fSeqNo = 0;
+  //fSeqNo = (u_int16_t)our_random(); 
+  //first 1733 second 1760 
+  //first 1729 second 1765 
+  //first 1624 second 1678 
+  //first 1756 second 1802 
+
+
   fSSRC = our_random32();
   fTimestampBase = our_random32(); 
 

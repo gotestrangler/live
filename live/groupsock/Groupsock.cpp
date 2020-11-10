@@ -330,7 +330,7 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 			      unsigned& bytesRead,
 			      struct sockaddr_in& fromAddressAndPort) {
 
-  fprintf(stderr, "Groupsock::handleRead - start\n");
+  
   // Read data from the socket, and relay it across any attached tunnels
   //##### later make this code more general - independent of tunnels
 
@@ -340,7 +340,7 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 
   int maxBytesToRead = bufferMaxSize - TunnelEncapsulationTrailerMaxSize;
   int numBytes = readSocket(env(), socketNum(), buffer, maxBytesToRead, fromAddressAndPort);
-
+  //fprintf(stderr, "Groupsock::handleRead - start %s\n", AddressString(fromAddressAndPort).val());
   //fprintf(stderr, "Groupsock::handleRead - readSocket after numbytes: %d\n", numBytes);
 
   if (numBytes < 0) {

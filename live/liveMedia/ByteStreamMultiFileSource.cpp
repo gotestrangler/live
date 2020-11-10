@@ -73,7 +73,6 @@ ByteStreamMultiFileSource* ByteStreamMultiFileSource
 }
 
 void ByteStreamMultiFileSource::doGetNextFrame() {
-  fprintf(stderr, "ByteStreamMultiFileSource::doGetNextFrame()\n");
   do {
     // First, check whether we've run out of sources:
     if (fCurrentlyReadSourceNumber >= fNumSources) break;

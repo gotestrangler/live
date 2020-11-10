@@ -163,7 +163,7 @@ void ByteStreamFileSource::doReadFromFile() {
 
   // Set the 'presentation time':
   if (fPlayTimePerFrame > 0 && fPreferredFrameSize > 0) {
-    fprintf(stderr, "BOOm %lu\n", fPlayTimePerFrame);
+    fprintf(stderr, "BOOm %u\n", fPlayTimePerFrame);
 
 
     if (fPresentationTime.tv_sec == 0 && fPresentationTime.tv_usec == 0) {

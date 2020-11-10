@@ -77,6 +77,11 @@ private:
   unsigned char* fSavedTo;
   unsigned fSavedMaxSize;
 
+  unsigned first; 
+  unsigned second; 
+  unsigned third;
+  unsigned fourth;
+
   // A buffer to (optionally) hold incoming pkts that have been reorderered
   class ReorderingPacketBuffer* fReorderingBuffer;
 };
@@ -136,6 +141,7 @@ protected:
   unsigned fHead;
   unsigned fTail;
 
+
 private:
   BufferedPacket* fNextPacket; // used to link together packets
   unsigned short fChunkRef;
@@ -148,6 +154,8 @@ private:
   Boolean fRTPMarkerBit;
   Boolean fIsFirstPacket;
   struct timeval fTimeReceived;
+  unsigned short fChunkRef;
+  struct sockaddr_in* fAddr; 
 };
 
 // A 'factory' class for creating "BufferedPacket" objects.

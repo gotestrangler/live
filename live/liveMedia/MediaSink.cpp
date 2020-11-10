@@ -60,6 +60,15 @@ Boolean MediaSink::sourceIsCompatibleWithUs(MediaSource& source) {
 Boolean MediaSink::startPlaying(MediaSource& source,
 				afterPlayingFunc* afterFunc,
 				void* afterClientData) {
+<<<<<<< HEAD
+
+      printf("bums bums\n"); 
+=======
+  
+  
+  fprintf(stderr, "             MediaSink::startPlaying\n");
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
+
   // Make sure we're not already being played:
   if (fSource != NULL) {
     envir().setResultMsg("This sink is already being played");

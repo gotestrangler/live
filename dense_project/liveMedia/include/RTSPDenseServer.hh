@@ -30,17 +30,22 @@ class RTSPDenseServer: public RTSPServer {
     static RTSPDenseServer* createNew(UsageEnvironment& env, Port ourPort = 554,
                             UserAuthenticationDatabase* authDatabase = NULL,
                             unsigned reclamationSeconds = 65,
-                            Boolean streamRTPOverTCP = False, int number = 1, ServerMediaSession *startingSession = NULL);
+                            Boolean streamRTPOverTCP = False, int number = 1, 
+                            ServerMediaSession *startingSession = NULL,
+                            char* name = NULL
+                            );
     
     int ref;
     int number;
-    HashTable* filenames; 
+    char* name; 
 
     protected:
     RTSPDenseServer(UsageEnvironment& env, int ourSocket, Port ourPort,
                     UserAuthenticationDatabase* authDatabase,
                     unsigned reclamationSeconds,
-                    Boolean streamRTPOverTCP, int number, ServerMediaSession *startingSession);
+                    Boolean streamRTPOverTCP, int number,
+                    ServerMediaSession *startingSession,
+                    char* name);
     // called only by createNew();
     virtual ~RTSPDenseServer ();
     
@@ -49,6 +54,8 @@ class RTSPDenseServer: public RTSPServer {
     friend class GenericMediaServer;
 
     void make(ServerMediaSession *session, int number);
+
+    void getFile(int , char* pointer);
 
 
     private:
@@ -117,6 +124,8 @@ class RTSPDenseServer: public RTSPServer {
         CheckSource* fileSource;
         
         MPEG2TransportStreamFramer* videoSource;
+
+        char sessionManifest[100];
     };
 
     DenseSession* createNewDenseSession(Groupsock* rtpG, Groupsock* rtcpG, ManifestRTPSink* videoSink, RTCPInstance* rtcp, 

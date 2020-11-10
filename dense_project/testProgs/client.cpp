@@ -22,6 +22,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
+#include "../liveMedia/include/ManifestSink.hh"
+#include <../liveMedia/include/RTSPDenseServer.hh>
 
 // Forward function definitions:
 
@@ -140,6 +142,8 @@ void openURL(UsageEnvironment& env, char const* progName, char const* rtspURL) {
   // Begin by creating a "RTSPClient" object.  Note that there is a separate "RTSPClient" object for each stream that we wish
   // to receive (even if more than stream uses the same "rtsp://" URL).
   RTSPClient* rtspClient = ourRTSPClient::createNew(env, rtspURL, RTSP_CLIENT_VERBOSITY_LEVEL, progName);
+  env << "URL \"" << rtspURL << "\n";
+
   if (rtspClient == NULL) {
     env << "Failed to create a RTSP client for URL \"" << rtspURL << "\": " << env.getResultMsg() << "\n";
     return;
@@ -170,8 +174,15 @@ void continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode, char* resultS
     char* const sdpDescription = resultString;
     env << *rtspClient << "Got a SDP description:\n" << sdpDescription << "\n";
 
+
+  
+
     // Create a media session object from this SDP description:
     scs.session = MediaSession::createNew(env, sdpDescription);
+    
+
+
+
     delete[] sdpDescription; // because we don't need it anymore
     if (scs.session == NULL) {
       env << *rtspClient << "Failed to create a MediaSession object from the SDP description: " << env.getResultMsg() << "\n";
@@ -198,11 +209,16 @@ void continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode, char* resultS
 #define REQUEST_STREAMING_OVER_TCP False
 
 void setupNextSubsession(RTSPClient* rtspClient) {
+  fprintf(stderr, "\n\n    setupNextSubsession\n");
+
   UsageEnvironment& env = rtspClient->envir(); // alias
   StreamClientState& scs = ((ourRTSPClient*)rtspClient)->scs; // alias
   
   scs.subsession = scs.iter->next();
+  //fprintf(stderr, "\n\n    setupNextSubsession %s\n", scs.subsession->init ? "true":"false");
   if (scs.subsession != NULL) {
+    fprintf(stderr, "\n\n    setting up the first subsession\n");
+
     if (!scs.subsession->initiate()) {
       env << *rtspClient << "Failed to initiate the \"" << *scs.subsession << "\" subsession: " << env.getResultMsg() << "\n";
       setupNextSubsession(rtspClient); // give up on this subsession; go to the next one
@@ -215,18 +231,27 @@ void setupNextSubsession(RTSPClient* rtspClient) {
       }
       env << ")\n";
 
+      //env << "savedSDPLines: " << scs.subsession->savedSDPLines() << "\n\n";
+      //env << "medium name: " << scs.subsession->mediumName() << "\n\n";
+
+
       // Continue setting up this subsession, by sending a RTSP "SETUP" command:
       rtspClient->sendSetupCommand(*scs.subsession, continueAfterSETUP, False, REQUEST_STREAMING_OVER_TCP);
     }
     return;
   }
 
+  env << "We've finished setting up all of the subsessions.  Now, send a RTSP PLAY command to start the streaming:\n\n";
+
+
   // We've finished setting up all of the subsessions.  Now, send a RTSP "PLAY" command to start the streaming:
   if (scs.session->absStartTime() != NULL) {
     // Special case: The stream is indexed by 'absolute' time, so send an appropriate "PLAY" command:
+    //rtspClient->sendPlayCommand(*scs.subsession, continueAfterPLAY, scs.session->absStartTime(), scs.session->absEndTime());
     rtspClient->sendPlayCommand(*scs.session, continueAfterPLAY, scs.session->absStartTime(), scs.session->absEndTime());
   } else {
     scs.duration = scs.session->playEndTime() - scs.session->playStartTime();
+    //rtspClient->sendPlayCommand(*scs.subsession, continueAfterPLAY);
     rtspClient->sendPlayCommand(*scs.session, continueAfterPLAY);
   }
 }
@@ -255,7 +280,7 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
 
       char const* recievedTS = "fakkoff.ts"; 
       // Create the data sink for 'stdout':
-      scs.subsession->sink = FileSink::createNew(rtspClient->envir(), recievedTS);
+      scs.subsession->sink = ManifestSink::createNew(rtspClient->envir(), recievedTS);
 
     //scs.subsession->sink = DummySink::createNew(env, *scs.subsession, rtspClient->url());
       // perhaps use your own custom "MediaSink" subclass instead

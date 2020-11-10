@@ -71,13 +71,18 @@ protected:
   virtual void doStopGettingFrames();
 
   void setCurChunk(unsigned short in);
-  void setPacketLossNotice();
+
 
   
 public: 
   unsigned short getCurChunk();
   Boolean getPacketLossNotice();
+  void setPacketLossNotice();
   void removePacketLossNotice();
+
+  void setAddr(struct sockaddr_in* in){fAddr = in;}
+  struct sockaddr_in* getAddr(){return fAddr;}
+  void rmAddr(){fAddr = NULL;}
 
 protected:
   // The following variables are typically accessed/set by doGetNextFrame()
@@ -87,6 +92,7 @@ protected:
   unsigned fNumTruncatedBytes; // out
   struct timeval fPresentationTime; // out
   unsigned fDurationInMicroseconds; // out
+  unsigned short chunkRef;
 
 private:
   // redefined virtual functions:
@@ -100,6 +106,7 @@ private:
   unsigned short fCurChunk;
   Boolean fPacketLossNotice;
   Boolean fIsCurrentlyAwaitingData;
+  struct sockaddr_in* fAddr; 
 };
 
 #endif

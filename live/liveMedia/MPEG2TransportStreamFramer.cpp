@@ -153,6 +153,8 @@ void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize,
   if(inputSource()->getPacketLossNotice()){
     setPacketLossNotice();
     inputSource()->removePacketLossNotice();
+    struct sockaddr_in* piece = inputSource()->getAddr();
+    setAddr(piece);
   }
 
   

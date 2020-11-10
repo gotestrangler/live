@@ -22,6 +22,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSink.hh"
 #include "GroupsockHelper.hh"
 
+#define TEST_LOSS 1
+
 ////////// MultiFramedRTPSink //////////
 
 void MultiFramedRTPSink::setPacketSizes(unsigned preferredPacketSize,
@@ -68,6 +70,7 @@ void MultiFramedRTPSink
 			 unsigned /*numRemainingBytes*/) {
 
 
+
   // default implementation: If this is the first frame in the packet,
   // use its presentationTime for the RTP timestamp:
   if (isFirstFrameInPacket()) {
@@ -95,6 +98,7 @@ unsigned MultiFramedRTPSink::specialHeaderSize() const {
 }
 
 unsigned MultiFramedRTPSink::frameSpecificHeaderSize() const {
+  
   // default implementation: Assume no frame-specific header:
   return 4;
 }
@@ -109,6 +113,8 @@ void MultiFramedRTPSink::setMarkerBit() {
   rtpHdr |= 0x00800000;
   fOutBuf->insertWord(rtpHdr, 0);
 }
+
+
 
 void MultiFramedRTPSink::setTimestamp(struct timeval framePresentationTime) {
   // First, convert the presentation time to a 32-bit RTP timestamp:
@@ -203,6 +209,22 @@ void MultiFramedRTPSink::buildAndSendPacket(Boolean isFirstPacket) {
   fSpecialHeaderSize = specialHeaderSize();
   fOutBuf->skipBytes(fSpecialHeaderSize);
 
+    
+  //Manifest specifics
+  // Set the video-specific header based on the parameters that we've seen.
+
+/*
+
+  fOutBuf->setXBit();
+  unsigned chunk_reference; 
+  unsigned videoSpecificHeader = (chunk_reference<<16);
+  fOutBuf->setSpecialHeaderWord(videoSpecificHeader);
+
+  */
+    
+ 
+
+
   // Begin packing as many (complete) frames into the packet as we can:
   fTotalFrameSpecificHeaderSizes = 0;
   fNoFramesLeft = False;
@@ -212,7 +234,7 @@ void MultiFramedRTPSink::buildAndSendPacket(Boolean isFirstPacket) {
 
 void MultiFramedRTPSink::packFrame() {
 
-  fprintf(stderr, "MultiFramedRTPSink::packFrame()\n");
+  //fprintf(stderr, "MultiFramedRTPSink::packFrame()\n");
 
   // Get the next frame.
 
@@ -254,7 +276,7 @@ void MultiFramedRTPSink
 		     struct timeval presentationTime,
 		     unsigned durationInMicroseconds) {
   
-  fprintf(stderr, "MultiFramedRTPSink::afterGettingFrame1\n");
+  //fprintf(stderr, "MultiFramedRTPSink::afterGettingFrame1\n");
 
   if (fIsFirstPacket) {
     // Record the fact that we're starting to play now:
@@ -380,16 +402,33 @@ Boolean MultiFramedRTPSink::isTooBigForAPacket(unsigned numBytes) const {
 }
 
 void MultiFramedRTPSink::sendPacketIfNecessary() {
-  fprintf(stderr, "\n     sendPacketIfNecessary()\n");
+  //fprintf(stderr, "\n     sendPacketIfNecessary()\n");
   if (fNumFramesUsedSoFar > 0) {
     // Send the packet:
+
+
+
 #ifdef TEST_LOSS
-    if ((our_random()%10) != 0) // simulate 10% packet loss #####
+    long drop = our_random(); 
+    fprintf(stderr, "\n     DROPp-check %ld\n", drop);
+
+    if ((drop%10) != 0){ // simulate 10% packet loss #####
 #endif
       if (!fRTPInterface.sendPacket(fOutBuf->packet(), fOutBuf->curPacketSize())) {
 	// if failure handler has been specified, call it
 	if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
       }
+  
+    }else{
+      
+      fprintf(stderr, "\n     DROPPED PACKET exiting\n");
+      exit(0);
+
+    }
+
+
+
+
     ++fPacketCount;
     fTotalOctetCount += fOutBuf->curPacketSize();
     fOctetCount += fOutBuf->curPacketSize()
@@ -415,7 +454,7 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
   fNumFramesUsedSoFar = 0;
 
   if (fNoFramesLeft) {
-      fprintf(stderr, "\n     sendPacketIfNecessary() -> fNoFramesLeft\n");
+      //fprintf(stderr, "\n     sendPacketIfNecessary() -> fNoFramesLeft\n");
 
     
     // We're done:
@@ -445,7 +484,7 @@ void MultiFramedRTPSink::sendNext(void* firstArg) {
 }
 
 void MultiFramedRTPSink::ourHandleClosure(void* clientData) {
-        fprintf(stderr, "\n     MultiFramedRTPSink::ourHandleClosure\n");
+        //fprintf(stderr, "\n     MultiFramedRTPSink::ourHandleClosure\n");
 
   MultiFramedRTPSink* sink = (MultiFramedRTPSink*)clientData;
   // There are no frames left, but we may have a partially built packet

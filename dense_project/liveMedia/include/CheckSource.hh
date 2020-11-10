@@ -41,6 +41,8 @@ public:
   u_int64_t fileSize() const { return fFileSize; }
       // 0 means zero-length, unbounded, or unknown
 
+  friend class ManifestRTPSink;
+
   void seekToByteAbsolute(u_int64_t byteNumber, u_int64_t numBytesToStream = 0);
     // if "numBytesToStream" is >0, then we limit the stream to that number of bytes, before treating it as EOF
   void seekToByteRelative(int64_t offset, u_int64_t numBytesToStream = 0);
@@ -59,7 +61,11 @@ protected:
 
   void stripPath(char const* fileName);
   void stripChunks();
+<<<<<<< HEAD
  
+=======
+  int getCurChunk(){ return curChunk; } 
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
 
   static void fileReadableHandler(CheckSource* source, int mask);
   void doReadFromFile();

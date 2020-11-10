@@ -58,6 +58,7 @@ Boolean FramedSource::lookupByName(UsageEnvironment& env, char const* sourceName
   }
   
 
+
   unsigned short FramedSource::getCurChunk(){
     fprintf(stderr, "\n     FramedSource::getCurChunk %u\n", fCurChunk);
     return fCurChunk;
@@ -118,8 +119,12 @@ void FramedSource::afterGetting(FramedSource* source) {
       // called below tries to read another frame (which it usually will)
 
   if (source->fAfterGettingFunc != NULL) {
+<<<<<<< HEAD
       fprintf(stderr, "\n     aftergetting 2\n");
 
+=======
+    fprintf(stderr, "\n     FramedSource:: something happens here \n");
+>>>>>>> 35512bf6226f879281a013d36201ce2650a3b2a0
     (*(source->fAfterGettingFunc))(source->fAfterGettingClientData,
 				   source->fFrameSize, source->fNumTruncatedBytes,
 				   source->fPresentationTime,

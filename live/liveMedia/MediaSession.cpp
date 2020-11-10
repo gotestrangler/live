@@ -30,6 +30,9 @@ MediaSession* MediaSession::createNew(UsageEnvironment& env,
 				      char const* sdpDescription) {
   MediaSession* newSession = new MediaSession(env);
   if (newSession != NULL) {
+    newSession->firstSubSession = 3;
+    fprintf(stderr, "\n\n   have made the MediaSession, and the firstSubSession int: %d\n", newSession->firstSubSession  );
+
     if (!newSession->initializeWithSDP(sdpDescription)) {
       delete newSession;
       return NULL;
@@ -64,6 +67,7 @@ MediaSession::MediaSession(UsageEnvironment& env)
     fScale(1.0f), fSpeed(1.0f),
     fMediaSessionType(NULL), fSessionName(NULL), fSessionDescription(NULL), fControlPath(NULL) {
   fSourceFilterAddr.s_addr = 0;
+  
 
   // Get our host name, and use this for the RTCP CNAME:
   const unsigned maxCNAMElen = 100;
@@ -125,10 +129,25 @@ Boolean MediaSession::initializeWithSDP(char const* sdpDescription) {
   while (sdpLine != NULL) {
     // We have a "m=" line, representing a new sub-session:
     MediaSubsession* subsession = createNewMediaSubsession();
-    if (subsession == NULL) {
+   if (subsession == NULL) {
       envir().setResultMsg("Unable to create new MediaSubsession");
       return False;
     }
+
+
+    if(firstSubSession > 0){
+      fprintf(stderr, "\n\n   i am checking to see if this subsession when we get there should be initiated %d\n", firstSubSession );
+
+      subsession->init = true;
+      firstSubSession = 0;
+    }else{
+      fprintf(stderr, "\n\n   the first subsession has already been seen %d (should be 0)\n", firstSubSession );
+
+      subsession->init = false; 
+    }
+
+
+ 
 
     // Parse the line as "m=<medium_name> <client_portNum> RTP/AVP <fmt>"
     // or "m=<medium_name> <client_portNum>/<num_ports> RTP/AVP <fmt>"
@@ -716,8 +735,12 @@ Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
 	    // use an even-numbered port for RTP, and the next (odd-numbered) port for RTCP
       }
       if (isSSM()) {
+        fprintf(stderr, "Skal sette opp groupsock, ISSSM\n\n");
+
 	fRTPSocket = new Groupsock(env(), tempAddr, fSourceFilterAddr, fClientPortNum);
       } else {
+                fprintf(stderr, "Skal sette opp groupsock, IS NOT SSM\n\n");
+
 	fRTPSocket = new Groupsock(env(), tempAddr, fClientPortNum, 255);
       }
       if (fRTPSocket == NULL) {
@@ -1128,7 +1151,8 @@ Boolean MediaSubsession::parseSDPAttribute_fmtp(char const* sdpLine) {
   // Check for a "a=fmtp:" line:
   // Later: Check that payload format number matches; #####
   do {
-    if (strncmp(sdpLine, "a=fmtp:", 7) != 0) break; sdpLine += 7;
+    if (strncmp(sdpLine, "a=fmtp:", 7) != 0) break; 
+    sdpLine += 7;
     while (isdigit(*sdpLine)) ++sdpLine;
 
     // The remaining "sdpLine" should be a sequence of
